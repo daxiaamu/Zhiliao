@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "versionCode": 202608082,
+  "versionName": "26.08.08-beta.2",
+  "url": "https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.2/Zhiliao_26.08.08-beta.2.apk",
+  "urls": [
+    "https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.2/Zhiliao_26.08.08-beta.2.apk",
+    "https://ghfast.top/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.2/Zhiliao_26.08.08-beta.2.apk",
+    "https://gh-proxy.com/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.2/Zhiliao_26.08.08-beta.2.apk",
+    "https://ghproxy.net/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.2/Zhiliao_26.08.08-beta.2.apk",
+    "https://gh.llkk.cc/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.2/Zhiliao_26.08.08-beta.2.apk",
+    "https://ghp.keleyaa.com/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.2/Zhiliao_26.08.08-beta.2.apk",
+    "https://gh.monlor.com/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.2/Zhiliao_26.08.08-beta.2.apk"
+  ],
+  "sha256": "6ad388475472bf09fd329008cdb39751feb09599dce6273440b74f82b31cd9d6",
+  "changelog": "## 重点修复\n\n- 修复 release 混淆后现代 libxposed API 102 模块入口无法实例化的问题。\n- 适配知乎 11.4.0（40408）的“我的”页面结构，知了入口位于顶部工具栏最右侧。\n- 新增模板化内容广告兜底过滤，增强未知版本和动态模板的适配能力。\n- 修复 HeadZoneBanner 在新 FeedList 类型上的接收者类型异常。\n- 优化 Compose 设置项布局，避免长说明文字与开关重叠。\n\n## 更新与自动化\n\n- Pre-release 使用独立 `update-beta` 更新通道，稳定版继续使用 `update`。\n- 多 CDN 更新、跳过版本、忽略提醒、SHA256 校验、下载并安装沿用同一更新会话。\n- 修复知乎兼容性 Actions：自动下载官网 APK、校验包信息、转换多 DEX 并运行 Hook 回归。\n\n## 真机验证\n\n- Android 16 / API 36，知乎 11.4.0（40408），LSPosed API 102。\n- release 构建、R8、Lint、28 项 Hook 测试全部通过。\n- 验证“我的”页入口、设置界面、隐藏/恢复桌面图标、LSPosed 隐藏后打开、内容页广告过滤及启动页优化。\n\nAPK SHA256：`6AD388475472BF09FD329008CDB39751FEB09599DCE6273440B74F82B31CD9D6`\n\n这是测试签名的 Pre-release，请在已安装相同签名的知了版本上直接升级。\n",
+  "publishedAt": "2026-08-07T22:58:03Z"
+}
