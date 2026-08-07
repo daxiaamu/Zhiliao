@@ -19,7 +19,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '17'
@@ -37,7 +37,8 @@ jobs:
             --output zhihu.apk "$url"
           test "$(stat -c%s zhihu.apk)" -gt 50000000
           unzip -tq zhihu.apk
-          badging="$(aapt dump badging zhihu.apk | head -n 1)"
+          build_tools="$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -n 1)"
+          badging="$("$build_tools/aapt" dump badging zhihu.apk | head -n 1)"
           package="$(sed -n "s/.*name='\([^']*\)'.*/\1/p" <<<"$badging")"
           version_name="$(sed -n "s/.*versionName='\([^']*\)'.*/\1/p" <<<"$badging")"
           version_code="$(sed -n "s/.*versionCode='\([^']*\)'.*/\1/p" <<<"$badging")"
@@ -77,7 +78,11 @@ jobs:
             echo "- Hook tests: ${{ steps.tests.outcome }}"
             echo "- Run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
             echo
-            cat zhihu-apk.sha256
+            if [ -f zhihu-apk.sha256 ]; then
+              cat zhihu-apk.sha256
+            else
+              echo 'APK metadata collection failed before checksum generation.'
+            fi
           } > zhihu-compatibility.md
 
       - uses: actions/upload-artifact@v4
