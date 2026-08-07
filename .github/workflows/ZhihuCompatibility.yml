@@ -38,7 +38,8 @@ jobs:
           test "$(stat -c%s zhihu.apk)" -gt 50000000
           unzip -tq zhihu.apk
           build_tools="$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -n 1)"
-          badging="$("$build_tools/aapt" dump badging zhihu.apk | head -n 1)"
+          badging="$("$build_tools/aapt" dump badging zhihu.apk)"
+          badging="${badging%%$'\n'*}"
           package="$(sed -n "s/.*name='\([^']*\)'.*/\1/p" <<<"$badging")"
           version_name="$(sed -n "s/.*versionName='\([^']*\)'.*/\1/p" <<<"$badging")"
           version_code="$(sed -n "s/.*versionCode='\([^']*\)'.*/\1/p" <<<"$badging")"
