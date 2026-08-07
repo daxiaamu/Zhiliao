@@ -1,0 +1,105 @@
+name: Publish update metadata
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  update-json:
+    if: ${{ !github.event.release.prerelease }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download release APK
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          mkdir release-assets
+          gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --pattern '*.apk' --dir release-assets
+          mapfile -t apks < <(find release-assets -maxdepth 1 -type f -name '*.apk')
+          if [ "${#apks[@]}" -ne 1 ]; then
+            echo "Expected exactly one APK asset, found ${#apks[@]}" >&2
+            exit 1
+          fi
+          echo "APK=${apks[0]}" >> "$GITHUB_ENV"
+          echo "ASSET_NAME=$(basename "${apks[0]}")" >> "$GITHUB_ENV"
+
+      - name: Read APK version
+        run: |
+          build_tools=$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -n 1)
+          badging=$("$build_tools/aapt" dump badging "$APK" | head -n 1)
+          version_code=$(sed -n "s/.*versionCode='\([^']*\)'.*/\1/p" <<< "$badging")
+          version_name=$(sed -n "s/.*versionName='\([^']*\)'.*/\1/p" <<< "$badging")
+          if [ -z "$version_code" ] || [ -z "$version_name" ]; then
+            echo "Unable to read version from APK" >&2
+            exit 1
+          fi
+          echo "VERSION_CODE=$version_code" >> "$GITHUB_ENV"
+          echo "VERSION_NAME=$version_name" >> "$GITHUB_ENV"
+
+      - name: Generate update.json
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          sha256=$(sha256sum "$APK" | awk '{print $1}')
+          gh release view "$TAG" --repo "$GITHUB_REPOSITORY" \
+            --json body,publishedAt,assets > release.json
+          jq \
+            --argjson versionCode "$VERSION_CODE" \
+            --arg versionName "$VERSION_NAME" \
+            --arg assetName "$ASSET_NAME" \
+            --arg sha256 "$sha256" \
+            '(.assets[] | select(.name == $assetName) | .url) as $url |
+            {
+              schemaVersion: 1,
+              versionCode: $versionCode,
+              versionName: $versionName,
+              url: $url,
+              urls: [
+                $url,
+                ("https://ghfast.top/" + $url),
+                ("https://gh-proxy.com/" + $url),
+                ("https://ghproxy.net/" + $url),
+                ("https://gh.llkk.cc/" + $url),
+                ("https://ghp.keleyaa.com/" + $url),
+                ("https://gh.monlor.com/" + $url)
+              ],
+              sha256: $sha256,
+              changelog: (.body // ""),
+              publishedAt: .publishedAt
+            }' release.json > update.json
+          jq -e '
+            .schemaVersion == 1 and
+            (.versionCode | type == "number") and
+            (.versionName | length > 0) and
+            (.url | startswith("https://")) and
+            (.urls | length >= 6) and
+            (all(.urls[]; startswith("https://"))) and
+            (.sha256 | test("^[0-9a-f]{64}$"))
+          ' update.json
+          cat update.json
+
+      - name: Attach update.json to release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.release.tag_name }}
+        run: gh release upload "$TAG" update.json --repo "$GITHUB_REPOSITORY" --clobber
+
+      - name: Publish CDN update branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir update-publish
+          cp update.json update-publish/update.json
+          cd update-publish
+          git init
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git checkout --orphan update
+          git add update.json
+          git commit -m "Update metadata for $VERSION_NAME"
+          git push --force "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:update

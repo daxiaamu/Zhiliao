@@ -1,5 +1,7 @@
 *.iml
 .gradle
+.gradle-user/
+.gradle-tmp/
 /local.properties
 .idea
 .DS_Store
@@ -8,3 +10,6 @@
 .externalNativeBuild
 /backup
 app/.cxx
+.codex-artifacts/
+.tmp-*
+app/test/*.jar

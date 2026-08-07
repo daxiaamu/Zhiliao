@@ -17,6 +17,7 @@ import com.shatyuka.zhiliao.hooks.IHook;
 import com.shatyuka.zhiliao.hooks.LaunchAd;
 import com.shatyuka.zhiliao.hooks.LiveButton;
 import com.shatyuka.zhiliao.hooks.MineHybridView;
+import com.shatyuka.zhiliao.hooks.MineToolbarEntry;
 import com.shatyuka.zhiliao.hooks.NavButton;
 import com.shatyuka.zhiliao.hooks.NavRes;
 import com.shatyuka.zhiliao.hooks.NextAnswer;
@@ -27,7 +28,6 @@ import com.shatyuka.zhiliao.hooks.StatusBar;
 import com.shatyuka.zhiliao.hooks.Tag;
 import com.shatyuka.zhiliao.hooks.ThirdPartyLogin;
 import com.shatyuka.zhiliao.hooks.VIPBanner;
-import com.shatyuka.zhiliao.hooks.ZhihuPreference;
 
 import org.junit.Test;
 
@@ -37,7 +37,10 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
+import java.util.List;
 
 public class HookTest {
     static class PackageInfo {
@@ -52,22 +55,28 @@ public class HookTest {
         System.out.println((new File("")).getAbsolutePath());
         File path = new File("test");
         File[] files = path.listFiles();
-        if (files != null) {
-            for (File file : files) {
+        List<File> testFiles = new ArrayList<>();
+        if (files != null)
+            Collections.addAll(testFiles, files);
+
+        String externalTestJar = System.getenv("ZHILIAO_TEST_JAR");
+        if (externalTestJar != null && !externalTestJar.isEmpty())
+            testFiles.add(new File(externalTestJar));
+
+        for (File file : testFiles) {
+            try {
                 String fileName = file.getName();
                 int index1 = fileName.lastIndexOf(".");
                 int index2 = fileName.lastIndexOf(" ");
                 if (!"jar".equalsIgnoreCase(fileName.substring(index1 + 1)))
                     continue;
-                try {
-                    PackageInfo packageInfo = new PackageInfo();
-                    packageInfo.name = fileName.substring(0, index2);
-                    packageInfo.versionCode = Integer.parseInt(fileName.substring(index2 + 1, index1));
-                    packageInfo.classLoader = new URLClassLoader(new URL[]{file.toURI().toURL()});
-                    packageInfos.add(packageInfo);
-                } catch (Throwable e) {
-                    e.printStackTrace();
-                }
+                PackageInfo packageInfo = new PackageInfo();
+                packageInfo.name = fileName.substring(0, index2);
+                packageInfo.versionCode = Integer.parseInt(fileName.substring(index2 + 1, index1));
+                packageInfo.classLoader = new URLClassLoader(new URL[]{file.toURI().toURL()});
+                packageInfos.add(packageInfo);
+            } catch (Throwable e) {
+                e.printStackTrace();
             }
         }
     }
@@ -88,7 +97,13 @@ public class HookTest {
     /** @noinspection RedundantSuppression*/
     @SuppressWarnings("deprecation")
     void checkHook(IHook hook) {
+        checkHook(hook, 0);
+    }
+
+    void checkHook(IHook hook, int minimumVersionCode) {
         for (PackageInfo packageInfo : packageInfos) {
+            if (packageInfo.versionCode < minimumVersionCode)
+                continue;
             try {
                 resetState(hook.getClass());
                 Helper.packageInfo = new android.content.pm.PackageInfo();
@@ -103,8 +118,8 @@ public class HookTest {
     }
 
     @Test
-    public void zhihuPreferenceTest() {
-        checkHook(new ZhihuPreference());
+    public void mineToolbarEntryTest() {
+        checkHook(new MineToolbarEntry(), 40408);
     }
 
     @Test
