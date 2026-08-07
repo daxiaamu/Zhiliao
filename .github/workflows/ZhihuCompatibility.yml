@@ -66,7 +66,7 @@ jobs:
         continue-on-error: true
         env:
           ZHILIAO_TEST_JAR: "${{ github.workspace }}/Zhihu-current 2147483647.jar"
-        run: ./gradlew --no-daemon --rerun-tasks -PskipNativeBuild testDebugUnitTest
+        run: bash ./gradlew --no-daemon --rerun-tasks -PskipNativeBuild testDebugUnitTest
 
       - name: Write compatibility report
         if: always()
@@ -96,6 +96,7 @@ jobs:
 
       - name: Open an issue when adaptation breaks
         if: steps.tests.outcome == 'failure'
+        continue-on-error: true
         env:
           GH_TOKEN: ${{ github.token }}
           TITLE: Compatibility failed - Zhihu ${{ steps.apk.outputs.version_name }} (${{ steps.apk.outputs.version_code }})
