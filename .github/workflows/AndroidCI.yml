@@ -42,7 +42,6 @@ jobs:
           name: Zhiliao_${{ env.VERSION }}
           path: ${{ github.workspace }}/app/build/outputs/apk/release
       - name: Send commit to telegram
-        if: ${{ secrets.TELEGRAM_TO != '' && secrets.TELEGRAM_TOKEN != '' }}
         continue-on-error: true
         uses: appleboy/telegram-action@master
         with:
