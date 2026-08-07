@@ -9,7 +9,6 @@ permissions:
 
 jobs:
   update-json:
-    if: ${{ !github.event.release.prerelease }}
     runs-on: ubuntu-latest
     steps:
       - name: Download release APK
@@ -92,6 +91,7 @@ jobs:
       - name: Publish CDN update branch
         env:
           GH_TOKEN: ${{ github.token }}
+          CHANNEL: ${{ github.event.release.prerelease && 'update-beta' || 'update' }}
         run: |
           mkdir update-publish
           cp update.json update-publish/update.json
@@ -99,7 +99,7 @@ jobs:
           git init
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git checkout --orphan update
+          git checkout --orphan "$CHANNEL"
           git add update.json
           git commit -m "Update metadata for $VERSION_NAME"
-          git push --force "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:update
+          git push --force "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "HEAD:${CHANNEL}"

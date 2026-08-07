@@ -31,6 +31,7 @@ import com.shatyuka.zhiliao.hooks.SearchAd;
 import com.shatyuka.zhiliao.hooks.ShareAd;
 import com.shatyuka.zhiliao.hooks.StatusBar;
 import com.shatyuka.zhiliao.hooks.Tag;
+import com.shatyuka.zhiliao.hooks.TemplateAdView;
 import com.shatyuka.zhiliao.hooks.ThirdPartyLogin;
 import com.shatyuka.zhiliao.hooks.VIPBanner;
 import com.shatyuka.zhiliao.hooks.WebView;
@@ -45,6 +46,7 @@ public class Hooks {
             new AnswerListAd(),
             new CommentAd(),
             new AnswerAd(),
+            new TemplateAdView(),
             new ShareAd(),
             new LiveButton(),
             new Horizontal(),

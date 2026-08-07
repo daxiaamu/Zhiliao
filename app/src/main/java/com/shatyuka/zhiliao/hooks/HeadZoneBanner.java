@@ -34,7 +34,9 @@ public class HeadZoneBanner implements IHook {
             XposedBridge.hookAllMethods(feedsHotListFragment2, "postRefreshSucceed", new XC_MethodHook() {
                 @Override
                 protected void beforeHookedMethod(MethodHookParam param) throws IllegalAccessException {
-                    if (Helper.prefs.getBoolean("switch_mainswitch", false)) {
+                    if (Helper.prefs.getBoolean("switch_mainswitch", false)
+                            && param.args.length > 0
+                            && head_zone.getDeclaringClass().isInstance(param.args[0])) {
                         head_zone.set(param.args[0], null);
                     }
                 }

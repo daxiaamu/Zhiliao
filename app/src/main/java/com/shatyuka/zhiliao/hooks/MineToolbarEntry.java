@@ -27,7 +27,7 @@ public final class MineToolbarEntry implements IHook {
     private static final String ENTRY_TAG = "zhiliao:mine-toolbar-entry";
     private static final String MODULE_PACKAGE = "com.shatyuka.zhiliao";
 
-    private Class<?> mineTabFragment;
+    private final List<Class<?>> minePageFragments = new ArrayList<>();
 
     @Override
     public String getName() {
@@ -36,34 +36,46 @@ public final class MineToolbarEntry implements IHook {
 
     @Override
     public void init(ClassLoader classLoader) throws Throwable {
-        try {
-            mineTabFragment = classLoader.loadClass(
-                    "com.zhihu.android.app.ui.fragment.more.mine.MineTabFragment");
-        } catch (ClassNotFoundException ignored) {
-            mineTabFragment = DexResolver.findClassByMethodName("mine_tab_fragment",
-                    "com.zhihu.android.app.ui.fragment.more.mine", "onSendPageId");
+        addIfPresent(classLoader, "com.zhihu.android.app.ui.fragment.more.mine.MineTabFragment");
+        addIfPresent(classLoader, "com.zhihu.android.app.ui.fragment.more.MineProfileEntryFragment");
+        addIfPresent(classLoader, "com.zhihu.android.profile.profile.ui.ProfileFragment2");
+        if (minePageFragments.isEmpty()) {
+            Class<?> fallback = DexResolver.findClassByMethodName("mine_tab_fragment",
+                    "com.zhihu.android.app.ui.fragment.more", "onSendPageId");
+            if (fallback != null)
+                minePageFragments.add(fallback);
         }
-        if (mineTabFragment == null)
+        if (minePageFragments.isEmpty())
             throw new ClassNotFoundException("MineTabFragment");
+    }
+
+    private void addIfPresent(ClassLoader classLoader, String name) {
+        try {
+            Class<?> candidate = classLoader.loadClass(name);
+            if (!minePageFragments.contains(candidate))
+                minePageFragments.add(candidate);
+        } catch (ClassNotFoundException ignored) {
+        }
     }
 
     @Override
     public void hook() {
-        XposedBridge.hookAllMethods(mineTabFragment, "onCreateView", new XC_MethodHook() {
-            @Override
-            protected void afterHookedMethod(MethodHookParam param) {
-                if (!(param.getResult() instanceof View))
-                    return;
-                View root = (View) param.getResult();
-                Object fragment = param.thisObject;
-                root.post(() -> addEntry(root, fragment));
-            }
-        });
+        for (Class<?> fragmentClass : minePageFragments) {
+            XposedBridge.hookAllMethods(fragmentClass, "onCreateView", new XC_MethodHook() {
+                @Override
+                protected void afterHookedMethod(MethodHookParam param) {
+                    if (!(param.getResult() instanceof View))
+                        return;
+                    View root = (View) param.getResult();
+                    root.post(() -> addEntry(root));
+                }
+            });
+        }
     }
 
-    private static void addEntry(View root, Object fragment) {
+    private static void addEntry(View root) {
         try {
-            LinearLayout rightIcons = findRightIconContainer(root);
+            ViewGroup rightIcons = findRightIconContainer(root);
             if (rightIcons == null || containsEntry(rightIcons))
                 return;
 
@@ -98,14 +110,23 @@ public final class MineToolbarEntry implements IHook {
                 }
             });
 
-            int size = dp(context, 44);
-            rightIcons.addView(button, new LinearLayout.LayoutParams(size, size));
+            int size = dp(context, 40);
+            rightIcons.addView(button, new ViewGroup.LayoutParams(size, size));
+            if (isProfileStaticToolbar(rightIcons)) {
+                rightIcons.post(() -> positionInProfileToolbar(rightIcons, button, size));
+            }
         } catch (Throwable throwable) {
             XposedBridge.log("[Zhiliao] Add Mine toolbar entry failed: " + throwable);
         }
     }
 
-    private static LinearLayout findRightIconContainer(View root) {
+    private static ViewGroup findRightIconContainer(View root) {
+        int profileToolbarId = root.getResources().getIdentifier(
+                "profile_static_toolbar", "id", root.getContext().getPackageName());
+        View profileToolbar = profileToolbarId == 0 ? null : root.findViewById(profileToolbarId);
+        if (profileToolbar instanceof ViewGroup)
+            return (ViewGroup) profileToolbar;
+
         int toolbarId = root.getResources().getIdentifier(
                 "toolbar2_container", "id", root.getContext().getPackageName());
         View toolbar = toolbarId == 0 ? root : root.findViewById(toolbarId);
@@ -128,6 +149,32 @@ public final class MineToolbarEntry implements IHook {
             }
         }
         return rightMost;
+    }
+
+    private static boolean isProfileStaticToolbar(ViewGroup group) {
+        int id = group.getResources().getIdentifier(
+                "profile_static_toolbar", "id", group.getContext().getPackageName());
+        return id != 0 && group.getId() == id;
+    }
+
+    private static void positionInProfileToolbar(ViewGroup toolbar, View button, int size) {
+        if (toolbar.getWidth() <= 0 || button.getParent() != toolbar)
+            return;
+        int sidebarId = toolbar.getResources().getIdentifier(
+                "sidebar_entry", "id", toolbar.getContext().getPackageName());
+        int moreId = toolbar.getResources().getIdentifier(
+                "more", "id", toolbar.getContext().getPackageName());
+        View anchor = moreId == 0 ? null : toolbar.findViewById(moreId);
+
+        for (int i = 0; i < toolbar.getChildCount(); i++) {
+            View child = toolbar.getChildAt(i);
+            if (child != button && child.getId() != sidebarId)
+                child.setTranslationX(-size);
+        }
+
+        button.setX(toolbar.getWidth() - size - dp(toolbar.getContext(), 10));
+        button.setY(anchor == null ? dp(toolbar.getContext(), 44) : anchor.getY());
+        button.bringToFront();
     }
 
     private static LinearLayout findByGetter(View view) {

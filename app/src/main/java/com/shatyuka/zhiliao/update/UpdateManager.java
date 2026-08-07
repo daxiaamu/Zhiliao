@@ -36,6 +36,15 @@ public final class UpdateManager {
             "https://github.com/daxiaamu/Zhiliao/releases/latest/download/update.json"
     };
 
+    private static final String[] BETA_UPDATE_JSON_URLS = {
+            "https://cdn.jsdelivr.net/gh/daxiaamu/Zhiliao@update-beta/update.json",
+            "https://fastly.jsdelivr.net/gh/daxiaamu/Zhiliao@update-beta/update.json",
+            "https://gcore.jsdelivr.net/gh/daxiaamu/Zhiliao@update-beta/update.json",
+            "https://testingcf.jsdelivr.net/gh/daxiaamu/Zhiliao@update-beta/update.json",
+            "https://cdn.statically.io/gh/daxiaamu/Zhiliao/update-beta/update.json",
+            "https://raw.githubusercontent.com/daxiaamu/Zhiliao/update-beta/update.json"
+    };
+
     private static final String[] RELEASE_PROXY_PREFIXES = {
             "https://ghfast.top/",
             "https://gh-proxy.com/",
@@ -130,7 +139,7 @@ public final class UpdateManager {
 
     private UpdateInfo fetchUpdateInfo() throws Exception {
         Throwable lastError = null;
-        for (String source : UPDATE_JSON_URLS) {
+        for (String source : metadataSources()) {
             try {
                 return fetchUpdateInfo(source);
             } catch (Throwable throwable) {
@@ -138,6 +147,17 @@ public final class UpdateManager {
             }
         }
         throw new IllegalStateException("所有更新信息源均不可用", lastError);
+    }
+
+    private String[] metadataSources() {
+        try {
+            String versionName = context.getPackageManager()
+                    .getPackageInfo(context.getPackageName(), 0).versionName;
+            if (versionName != null && versionName.contains("-"))
+                return BETA_UPDATE_JSON_URLS;
+        } catch (Throwable ignored) {
+        }
+        return UPDATE_JSON_URLS;
     }
 
     private UpdateInfo fetchUpdateInfo(String source) throws Exception {

@@ -26,6 +26,7 @@ import com.shatyuka.zhiliao.hooks.SearchAd;
 import com.shatyuka.zhiliao.hooks.ShareAd;
 import com.shatyuka.zhiliao.hooks.StatusBar;
 import com.shatyuka.zhiliao.hooks.Tag;
+import com.shatyuka.zhiliao.hooks.TemplateAdView;
 import com.shatyuka.zhiliao.hooks.ThirdPartyLogin;
 import com.shatyuka.zhiliao.hooks.VIPBanner;
 
@@ -120,6 +121,11 @@ public class HookTest {
     @Test
     public void mineToolbarEntryTest() {
         checkHook(new MineToolbarEntry(), 40408);
+    }
+
+    @Test
+    public void templateAdViewTest() {
+        checkHook(new TemplateAdView(), 40408);
     }
 
     @Test

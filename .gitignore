@@ -2,6 +2,7 @@
 .gradle
 .gradle-user/
 .gradle-tmp/
+.kotlin/
 /local.properties
 .idea
 .DS_Store

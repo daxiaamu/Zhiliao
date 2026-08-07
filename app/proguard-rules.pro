@@ -20,7 +20,10 @@
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
 
--keep public class com.shatyuka.zhiliao.MainHook
+-keep public class com.shatyuka.zhiliao.MainHook {
+    public <init>();
+    public *;
+}
 -repackageclasses "zhiliao"
 -allowaccessmodification
 -overloadaggressively
