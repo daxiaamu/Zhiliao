@@ -37,12 +37,10 @@ jobs:
             --output zhihu.apk "$url"
           test "$(stat -c%s zhihu.apk)" -gt 50000000
           unzip -tq zhihu.apk
-          build_tools="$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -n 1)"
-          "$build_tools/aapt2" dump badging zhihu.apk > zhihu-badging.txt
-          badging="$(grep -m1 '^package:' zhihu-badging.txt)"
-          package="$(sed -n "s/.*name='\([^']*\)'.*/\1/p" <<<"$badging")"
-          version_name="$(sed -n "s/.*versionName='\([^']*\)'.*/\1/p" <<<"$badging")"
-          version_code="$(sed -n "s/.*versionCode='\([^']*\)'.*/\1/p" <<<"$badging")"
+          apkanalyzer="$ANDROID_HOME/cmdline-tools/latest/bin/apkanalyzer"
+          package="$("$apkanalyzer" manifest application-id zhihu.apk)"
+          version_name="$("$apkanalyzer" manifest version-name zhihu.apk)"
+          version_code="$("$apkanalyzer" manifest version-code zhihu.apk)"
           test "$package" = 'com.zhihu.android'
           test -n "$version_name"
           test -n "$version_code"
