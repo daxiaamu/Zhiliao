@@ -377,7 +377,6 @@ class MainActivity : ComponentActivity() {
     @Composable
     private fun AboutCard() {
         SettingsCard {
-            HorizontalDivider()
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
