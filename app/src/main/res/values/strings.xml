@@ -38,10 +38,8 @@
     <string name="unknown">未知</string>
     <string name="enable_module">启用知了</string>
     <string name="enable_module_summary">总开关；修改后重启知乎生效</string>
-    <string name="remove_launch_ads">移除启动广告</string>
-    <string name="remove_launch_ads_summary">跳过启动页全屏广告</string>
-    <string name="optimize_splash">加速启动页</string>
-    <string name="optimize_splash_summary">跳过启动广告请求与约 2.6 秒展示等待，不改动应用初始化</string>
+    <string name="remove_launch_ads">移除启动广告并加速启动</string>
+    <string name="remove_launch_ads_summary">直接走无广告启动路径，跳过广告请求与展示等待</string>
     <string name="remove_feed_ads">移除信息流广告</string>
     <string name="remove_feed_ads_summary">过滤推荐列表中的推广内容</string>
     <string name="remove_answer_list_ads">移除回答列表广告</string>

@@ -1,114 +1,349 @@
-name: Zhihu compatibility check
+name: Zhihu version sentinel
 
 on:
   workflow_dispatch:
+    inputs:
+      channel:
+        description: Channel to check
+        required: true
+        default: both
+        type: choice
+        options:
+          - both
+          - domestic
+          - play
+      force:
+        description: Test even when the version is already in the catalog
+        required: true
+        default: false
+        type: boolean
+      domestic_apk_url:
+        description: Optional override for the official domestic APK URL
+        required: false
+        type: string
+      play_apk_url:
+        description: Optional override for the APKPure Play XAPK/APK mirror
+        required: false
+        type: string
   schedule:
-    - cron: '23 2 * * 1,4'
+    - cron: '23 2 * * *'
 
 permissions:
-  contents: read
+  contents: write
   issues: write
+  pull-requests: write
 
 concurrency:
-  group: zhihu-compatibility
+  group: zhihu-version-sentinel
   cancel-in-progress: true
+
+env:
+  CATALOG: update/compatibility-v1.json
+  ZHIHU_PACKAGE: com.zhihu.android
+  # Both the current domestic APK and Google Play base APK use this Zhihu key.
+  ZHIHU_CERT_SHA256: bd8450557cb3965c051f1611d4286a5f029b909cae3de757ec152d0563c3f7fa
 
 jobs:
   check:
+    name: Check ${{ matrix.channel }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        channel: [domestic, play]
+
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Select channel
+        id: select
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          REQUESTED_CHANNEL: ${{ inputs.channel || 'both' }}
+          CURRENT_CHANNEL: ${{ matrix.channel }}
+        shell: bash
+        run: |
+          selected=true
+          if [[ "$EVENT_NAME" == 'workflow_dispatch' \
+                && "$REQUESTED_CHANNEL" != 'both' \
+                && "$REQUESTED_CHANNEL" != "$CURRENT_CHANNEL" ]]; then
+            selected=false
+          fi
+          echo "selected=$selected" >> "$GITHUB_OUTPUT"
+
+      - name: Discover release and acquire APK
+        id: fetch
+        if: steps.select.outputs.selected == 'true'
+        continue-on-error: true
+        env:
+          CHANNEL: ${{ matrix.channel }}
+          FORCE_CHECK: ${{ inputs.force || false }}
+          DOMESTIC_APK_URL: ${{ inputs.domestic_apk_url || 'https://www.zhihu.com/client/download/1355/zhihuwap64' }}
+          PLAY_APK_URL: ${{ inputs.play_apk_url || secrets.ZHIHU_PLAY_APK_URL || vars.ZHIHU_PLAY_APK_URL || 'https://d.apkpure.net/b/XAPK/com.zhihu.android?version=latest' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p compatibility-work
+          echo 'needs_apk=false' >> "$GITHUB_OUTPUT"
+          echo 'already_adapted=false' >> "$GITHUB_OUTPUT"
+
+          if [[ "$CHANNEL" == 'domestic' ]]; then
+            echo 'needs_apk=true' >> "$GITHUB_OUTPUT"
+            curl --fail --location --retry 3 --retry-all-errors \
+              --user-agent 'Mozilla/5.0 (Linux; Android 16)' \
+              --output compatibility-work/zhihu.apk "$DOMESTIC_APK_URL"
+          else
+            curl --fail --location --retry 3 --retry-all-errors --compressed \
+              --user-agent 'Mozilla/5.0' \
+              --output compatibility-work/google-play.html \
+              'https://play.google.com/store/apps/details?id=com.zhihu.android&hl=en_US&gl=US'
+            official_version="$(python scripts/compatibility/catalog.py \
+              parse-play-version --html compatibility-work/google-play.html)"
+            echo "official_version=$official_version" >> "$GITHUB_OUTPUT"
+            adapted="$(python scripts/compatibility/catalog.py is-adapted \
+              --catalog "$CATALOG" --channel play --version-name "$official_version")"
+            echo "already_adapted=$adapted" >> "$GITHUB_OUTPUT"
+            if [[ "$adapted" == 'true' && "$FORCE_CHECK" != 'true' ]]; then
+              echo 'skip_reason=The official Google Play version is already adapted.' >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            echo 'needs_apk=true' >> "$GITHUB_OUTPUT"
+            curl --fail --location --retry 3 --retry-all-errors \
+              --user-agent 'APKPure/3.20.49 (Linux; Android 16)' \
+              --output compatibility-work/play-download "$PLAY_APK_URL"
+            download_size="$(stat -c%s compatibility-work/play-download)"
+            test "$download_size" -gt 5000000
+            test "$download_size" -lt 1073741824
+            if unzip -Z1 compatibility-work/play-download | grep -Eqi '\.apk$'; then
+              mkdir -p compatibility-work/play-apks
+              unzip -q compatibility-work/play-download '*.apk' \
+                -d compatibility-work/play-apks
+              base_apk="$(find compatibility-work/play-apks -type f -iname '*.apk' \
+                -printf '%s\t%p\n' | sort -nr | head -n 1 | cut -f 2-)"
+              test -n "$base_apk"
+              cp "$base_apk" compatibility-work/zhihu.apk
+            else
+              cp compatibility-work/play-download compatibility-work/zhihu.apk
+            fi
+          fi
+
+          test "$(stat -c%s compatibility-work/zhihu.apk)" -gt 5000000
+          unzip -tq compatibility-work/zhihu.apk
 
       - uses: actions/setup-java@v5
+        if: steps.fetch.outcome == 'success' && steps.fetch.outputs.needs_apk == 'true'
         with:
           distribution: temurin
           java-version: '17'
           cache: gradle
 
       - uses: android-actions/setup-android@v3
+        if: steps.fetch.outcome == 'success' && steps.fetch.outputs.needs_apk == 'true'
 
-      - name: Download official 64-bit Zhihu APK
-        id: apk
-        shell: bash
-        run: |
-          set -euo pipefail
-          url='https://www.zhihu.com/client/download/1355/zhihuwap64'
-          curl --fail --location --retry 3 --user-agent 'Mozilla/5.0 (Linux; Android 16)' \
-            --output zhihu.apk "$url"
-          test "$(stat -c%s zhihu.apk)" -gt 50000000
-          unzip -tq zhihu.apk
-          apkanalyzer="$ANDROID_HOME/cmdline-tools/latest/bin/apkanalyzer"
-          package="$("$apkanalyzer" manifest application-id zhihu.apk)"
-          version_name="$("$apkanalyzer" manifest version-name zhihu.apk)"
-          version_code="$("$apkanalyzer" manifest version-code zhihu.apk)"
-          test "$package" = 'com.zhihu.android'
-          test -n "$version_name"
-          test -n "$version_code"
-          sha256sum zhihu.apk | tee zhihu-apk.sha256
-          printf 'version_name=%s\nversion_code=%s\n' "$version_name" "$version_code" | tee zhihu-version.txt
-          echo "version_name=$version_name" >> "$GITHUB_OUTPUT"
-          echo "version_code=$version_code" >> "$GITHUB_OUTPUT"
-
-      - name: Convert APK dex files to a test jar
-        shell: bash
-        run: |
-          set -euo pipefail
-          curl --fail --location --retry 3 \
-            --output dex-tools.zip \
-            https://github.com/pxb1988/dex2jar/releases/download/v2.4/dex-tools-v2.4.zip
-          unzip -q dex-tools.zip -d dex-tools
-          java -Xms512m -Xmx6g -cp 'dex-tools/dex-tools-v2.4/lib/*' \
-            com.googlecode.dex2jar.tools.Dex2jarCmd --force \
-            --output 'Zhihu-current 2147483647.jar' zhihu.apk
-
-      - name: Run hook compatibility tests
-        id: tests
+      - name: Verify APK identity and read metadata
+        id: metadata
+        if: steps.fetch.outcome == 'success' && steps.fetch.outputs.needs_apk == 'true'
         continue-on-error: true
         env:
-          ZHILIAO_TEST_JAR: "${{ github.workspace }}/Zhihu-current 2147483647.jar"
+          CHANNEL: ${{ matrix.channel }}
+          FORCE_CHECK: ${{ inputs.force || false }}
+          OFFICIAL_PLAY_VERSION: ${{ steps.fetch.outputs.official_version }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          sdkmanager 'build-tools;37.0.0' >/dev/null
+          apkanalyzer="$ANDROID_HOME/cmdline-tools/latest/bin/apkanalyzer"
+          apksigner="$ANDROID_HOME/build-tools/37.0.0/apksigner"
+          apk='compatibility-work/zhihu.apk'
+
+          package="$($apkanalyzer manifest application-id "$apk")"
+          version_name="$($apkanalyzer manifest version-name "$apk")"
+          version_code="$($apkanalyzer manifest version-code "$apk")"
+          echo "version_name=$version_name" >> "$GITHUB_OUTPUT"
+          echo "version_code=$version_code" >> "$GITHUB_OUTPUT"
+          test "$package" = "$ZHIHU_PACKAGE"
+          [[ "$version_code" =~ ^[0-9]+$ ]]
+          test -n "$version_name"
+          if [[ "$CHANNEL" == 'play' ]]; then
+            test "$version_name" = "$OFFICIAL_PLAY_VERSION"
+          fi
+
+          signer_output="$($apksigner verify --print-certs "$apk" 2>/dev/null)"
+          cert_sha="$(printf '%s\n' "$signer_output" \
+            | grep -E '^(Signer #[0-9]+ certificate SHA-256 digest|V[0-9.]+ Signer: certificate SHA-256 digest):' \
+            | grep -oE '[0-9a-fA-F]{64}' | head -n 1 | tr 'A-F' 'a-f')"
+          test "$cert_sha" = "$ZHIHU_CERT_SHA256"
+
+          apk_sha="$(sha256sum "$apk" | awk '{print $1}')"
+          echo "apk_sha256=$apk_sha" >> "$GITHUB_OUTPUT"
+          printf '%s  %s\n' "$apk_sha" 'zhihu.apk' > compatibility-work/zhihu-apk.sha256
+
+          adapted="$(python scripts/compatibility/catalog.py is-adapted \
+            --catalog "$CATALOG" --channel "$CHANNEL" \
+            --version-name "$version_name" --version-code "$version_code")"
+          echo "already_adapted=$adapted" >> "$GITHUB_OUTPUT"
+          if [[ "$adapted" == 'true' && "$FORCE_CHECK" != 'true' ]]; then
+            echo 'needs_test=false' >> "$GITHUB_OUTPUT"
+          else
+            echo 'needs_test=true' >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Convert APK dex files to a test jar
+        id: convert
+        if: steps.metadata.outcome == 'success' && steps.metadata.outputs.needs_test == 'true'
+        continue-on-error: true
+        env:
+          CHANNEL: ${{ matrix.channel }}
+          VERSION_CODE: ${{ steps.metadata.outputs.version_code }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --location --retry 3 --retry-all-errors \
+            --output compatibility-work/dex-tools.zip \
+            https://github.com/pxb1988/dex2jar/releases/download/v2.4/dex-tools-v2.4.zip
+          unzip -q compatibility-work/dex-tools.zip -d compatibility-work/dex-tools
+          jar_path="$GITHUB_WORKSPACE/compatibility-work/Zhihu-$CHANNEL $VERSION_CODE.jar"
+          java -Xms512m -Xmx6g -cp 'compatibility-work/dex-tools/dex-tools-v2.4/lib/*' \
+            com.googlecode.dex2jar.tools.Dex2jarCmd --force \
+            --output "$jar_path" compatibility-work/zhihu.apk
+          test -s "$jar_path"
+          echo "jar_path=$jar_path" >> "$GITHUB_OUTPUT"
+
+      - name: Run all hook compatibility tests
+        id: tests
+        if: steps.convert.outcome == 'success'
+        continue-on-error: true
+        env:
+          ZHILIAO_TEST_JAR: ${{ steps.convert.outputs.jar_path }}
         run: bash ./gradlew --no-daemon --rerun-tasks -PskipNativeBuild testDebugUnitTest
 
       - name: Write compatibility report
-        if: always()
+        id: report
+        if: always() && steps.select.outputs.selected == 'true'
+        env:
+          CHANNEL: ${{ matrix.channel }}
+          OFFICIAL_VERSION: ${{ steps.fetch.outputs.official_version }}
+          VERSION_NAME: ${{ steps.metadata.outputs.version_name }}
+          VERSION_CODE: ${{ steps.metadata.outputs.version_code }}
+          APK_SHA256: ${{ steps.metadata.outputs.apk_sha256 }}
+          FETCH_OUTCOME: ${{ steps.fetch.outcome }}
+          METADATA_OUTCOME: ${{ steps.metadata.outcome }}
+          CONVERT_OUTCOME: ${{ steps.convert.outcome }}
+          TEST_OUTCOME: ${{ steps.tests.outcome }}
+          FETCH_ADAPTED: ${{ steps.fetch.outputs.already_adapted }}
+          METADATA_ADAPTED: ${{ steps.metadata.outputs.already_adapted }}
+          SKIP_REASON: ${{ steps.fetch.outputs.skip_reason }}
         shell: bash
         run: |
+          version="${VERSION_NAME:-${OFFICIAL_VERSION:-unknown}}"
+          code="${VERSION_CODE:-unknown}"
+          adapted="${METADATA_ADAPTED:-${FETCH_ADAPTED:-false}}"
           {
             echo '# Zhihu compatibility report'
             echo
-            echo "- Version: ${{ steps.apk.outputs.version_name }} (${{ steps.apk.outputs.version_code }})"
-            echo "- Hook tests: ${{ steps.tests.outcome }}"
-            echo "- Run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
-            echo
-            if [ -f zhihu-apk.sha256 ]; then
-              cat zhihu-apk.sha256
-            else
-              echo 'APK metadata collection failed before checksum generation.'
+            echo "- Channel: $CHANNEL"
+            echo "- Version: $version ($code)"
+            echo "- Already adapted: $adapted"
+            echo "- APK acquisition: $FETCH_OUTCOME"
+            echo "- APK identity: ${METADATA_OUTCOME:-skipped}"
+            echo "- DEX conversion: ${CONVERT_OUTCOME:-skipped}"
+            echo "- Hook tests: ${TEST_OUTCOME:-skipped}"
+            echo "- APK SHA-256: ${APK_SHA256:-unavailable}"
+            if [[ -n "$SKIP_REASON" ]]; then
+              echo "- Note: $SKIP_REASON"
             fi
-          } > zhihu-compatibility.md
+            echo "- Run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          } > compatibility-work/zhihu-compatibility.md
 
       - uses: actions/upload-artifact@v4
-        if: always()
+        if: always() && steps.select.outputs.selected == 'true'
         with:
-          name: zhihu-compatibility-${{ steps.apk.outputs.version_code }}
+          name: zhihu-compatibility-${{ matrix.channel }}-${{ steps.metadata.outputs.version_code || steps.fetch.outputs.official_version || github.run_id }}
+          if-no-files-found: warn
           path: |
-            zhihu-compatibility.md
+            compatibility-work/zhihu-compatibility.md
+            compatibility-work/zhihu-apk.sha256
             app/build/reports/tests/testDebugUnitTest/
 
-      - name: Open an issue when adaptation breaks
-        if: steps.tests.outcome == 'failure'
+      - name: Open or update an incompatibility issue
+        if: >-
+          always() && steps.select.outputs.selected == 'true' &&
+          (steps.fetch.outcome == 'failure' ||
+           steps.metadata.outcome == 'failure' ||
+           steps.convert.outcome == 'failure' ||
+           steps.tests.outcome == 'failure')
         continue-on-error: true
         env:
           GH_TOKEN: ${{ github.token }}
-          TITLE: Compatibility failed - Zhihu ${{ steps.apk.outputs.version_name }} (${{ steps.apk.outputs.version_code }})
+          CHANNEL: ${{ matrix.channel }}
+          VERSION_NAME: ${{ steps.metadata.outputs.version_name || steps.fetch.outputs.official_version || 'unknown' }}
+          VERSION_CODE: ${{ steps.metadata.outputs.version_code || 'unknown' }}
         shell: bash
         run: |
-          existing="$(gh issue list --state open --search "$TITLE in:title" --json number --jq '.[0].number // empty')"
-          if [ -z "$existing" ]; then
-            gh issue create --title "$TITLE" --body-file zhihu-compatibility.md --label bug
+          title="Compatibility failed - Zhihu $CHANNEL $VERSION_NAME ($VERSION_CODE)"
+          existing="$(gh issue list --state open --search "$title in:title" \
+            --json number --jq '.[0].number // empty')"
+          if [[ -z "$existing" ]]; then
+            gh issue create --title "$title" \
+              --body-file compatibility-work/zhihu-compatibility.md --label bug
           else
-            gh issue comment "$existing" --body-file zhihu-compatibility.md
+            gh issue comment "$existing" --body-file compatibility-work/zhihu-compatibility.md
           fi
 
+      - name: Create reviewed compatibility config candidate
+        id: candidate
+        if: >-
+          steps.metadata.outcome == 'success' &&
+          steps.metadata.outputs.needs_test == 'true' &&
+          steps.metadata.outputs.already_adapted == 'false' &&
+          steps.tests.outcome == 'success'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CHANNEL: ${{ matrix.channel }}
+          VERSION_NAME: ${{ steps.metadata.outputs.version_name }}
+          VERSION_CODE: ${{ steps.metadata.outputs.version_code }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          branch="automation/zhihu-compat-$CHANNEL-$VERSION_CODE"
+          existing="$(gh pr list --state open --head "$branch" \
+            --json number --jq '.[0].number // empty')"
+          if [[ -n "$existing" ]]; then
+            gh pr comment "$existing" --body-file compatibility-work/zhihu-compatibility.md
+            exit 0
+          fi
+
+          git checkout -b "$branch" origin/master
+          python scripts/compatibility/catalog.py add-profile \
+            --catalog "$CATALOG" --channel "$CHANNEL" \
+            --version-name "$VERSION_NAME" --version-code "$VERSION_CODE"
+          python scripts/compatibility/catalog.py validate --catalog "$CATALOG"
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add "$CATALOG"
+          git commit -m "Add Zhihu $CHANNEL $VERSION_NAME compatibility candidate"
+          git push origin "HEAD:refs/heads/$branch"
+
+          {
+            echo '## Automated compatibility candidate'
+            echo
+            echo 'The existing hook suite passed against this APK. This PR only records the exact tested version; it does not invent or publish new hook symbols.'
+            echo
+            cat compatibility-work/zhihu-compatibility.md
+            echo
+            echo 'Merge only after reviewing the test report. The compatibility manifest workflow publishes the CDN manifest after merge.'
+          } > compatibility-work/pull-request.md
+          gh pr create --base master --head "$branch" \
+            --title "Adapt Zhihu $CHANNEL $VERSION_NAME ($VERSION_CODE)" \
+            --body-file compatibility-work/pull-request.md
+
       - name: Fail workflow after reporting
-        if: steps.tests.outcome == 'failure'
+        if: >-
+          always() && steps.select.outputs.selected == 'true' &&
+          (steps.fetch.outcome == 'failure' ||
+           steps.metadata.outcome == 'failure' ||
+           steps.convert.outcome == 'failure' ||
+           steps.tests.outcome == 'failure')
         run: exit 1

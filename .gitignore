@@ -13,4 +13,6 @@
 app/.cxx
 .codex-artifacts/
 .tmp-*
+__pycache__/
+*.pyc
 app/test/*.jar

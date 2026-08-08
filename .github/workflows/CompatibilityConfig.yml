@@ -23,6 +23,8 @@ jobs:
 
       - name: Validate config and generate CDN manifest
         run: |
+          python scripts/compatibility/catalog.py validate \
+            --catalog update/compatibility-v1.json
           jq -e '
             .schemaVersion == 1 and
             (.revision | type == "number") and .revision > 0 and

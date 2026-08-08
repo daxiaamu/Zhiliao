@@ -246,19 +246,14 @@ class MainActivity : ComponentActivity() {
                 )
                 Column(Modifier.weight(1f)) {
                     Text(
-                        stringResource(R.string.app_name),
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold,
+                        stringResource(R.string.app_tagline),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
                     )
                     Text(
                         stringResource(R.string.version_format, currentVersionName()),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    Spacer(Modifier.height(4.dp))
-                    Text(
-                        stringResource(R.string.app_tagline),
-                        style = MaterialTheme.typography.bodyMedium,
                     )
                 }
             }
@@ -628,7 +623,6 @@ class MainActivity : ComponentActivity() {
 
         private val HOOK_OPTIONS = listOf(
             HookOption("switch_launchad", R.string.remove_launch_ads, R.string.remove_launch_ads_summary, true),
-            HookOption("switch_launch_optimize", R.string.optimize_splash, R.string.optimize_splash_summary),
             HookOption("switch_feedad", R.string.remove_feed_ads, R.string.remove_feed_ads_summary, true),
             HookOption("switch_answerlistad", R.string.remove_answer_list_ads, R.string.remove_answer_list_ads_summary, true),
             HookOption("switch_commentad", R.string.remove_comment_ads, R.string.remove_comment_ads_summary, true),

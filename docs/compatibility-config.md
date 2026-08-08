@@ -32,6 +32,9 @@
 
 每次正式发布仍应把最新稳定配置写回 assets，避免首次安装依赖网络。
 
+定期版本发现、APK 身份校验、兼容测试和候选 PR 流程见
+[`compatibility-sentinel.md`](compatibility-sentinel.md)。
+
 ## 修改流程
 
 1. 在 `profiles` 中新增或收窄版本范围；跨版本稳定的候选才放进 `defaults`。

@@ -5,6 +5,8 @@ import com.shatyuka.zhiliao.Helper;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import android.app.Activity;
 import android.view.View;
 
 import com.shatyuka.zhiliao.xposed.XC_MethodHook;
@@ -18,6 +20,7 @@ public class LaunchAd implements IHook {
     static Method requestLaunchAd;
     static Method requestLaunchFlow;
     static Method continueLaunch;
+    static Method skipLauncherAdCheck;
 
     @Override
     public String getName() {
@@ -63,6 +66,24 @@ public class LaunchAd implements IHook {
             requestLaunchFlow = null;
             continueLaunch = null;
         }
+        // Google Play 10.95 asks this predicate whether LauncherActivity can
+        // take its own no-ad continuation. Returning true preserves Zhihu's
+        // normal routing/initialization while avoiding the several-second ad wait.
+        try {
+            Class<?> launchAdDecision = classLoader.loadClass("com.zhihu.android.ad.utils.i1");
+            for (Method method : launchAdDecision.getDeclaredMethods()) {
+                Class<?>[] parameters = method.getParameterTypes();
+                if (Modifier.isStatic(method.getModifiers())
+                        && method.getReturnType() == boolean.class
+                        && parameters.length == 1
+                        && parameters[0] == Activity.class) {
+                    skipLauncherAdCheck = method;
+                    break;
+                }
+            }
+        } catch (Throwable ignored) {
+            skipLauncherAdCheck = null;
+        }
     }
 
     @Override
@@ -87,9 +108,23 @@ public class LaunchAd implements IHook {
                 @Override
                 protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                     if (Helper.prefs.getBoolean("switch_mainswitch", false)
-                            && Helper.prefs.getBoolean("switch_launch_optimize", false)) {
+                            && Helper.prefs.getBoolean("switch_launchad", true)) {
                         continueLaunch.invoke(param.args[1]);
                         param.setResult(null);
+                    }
+                }
+            });
+        }
+        if (skipLauncherAdCheck != null) {
+            XposedBridge.hookMethod(skipLauncherAdCheck, new XC_MethodHook() {
+                @Override
+                protected void beforeHookedMethod(MethodHookParam param) {
+                    if (Helper.prefs.getBoolean("switch_mainswitch", false)
+                            && Helper.prefs.getBoolean("switch_launchad", true)
+                            && param.args[0] instanceof Activity
+                            && "com.zhihu.android.app.ui.activity.LauncherActivity".equals(
+                                    param.args[0].getClass().getName())) {
+                        param.setResult(true);
                     }
                 }
             });
