@@ -76,6 +76,9 @@ public class Cleaner implements IHook {
     @SuppressWarnings("ResultOfMethodCallIgnored")
     public static long doClean() {
         File[] files = getCacheFiles();
+        if (files == null) {
+            return 0;
+        }
         long size = 0;
         for (File file: files) {
             try {
@@ -94,9 +97,14 @@ public class Cleaner implements IHook {
 
     @Override
     public void init(ClassLoader classLoader) throws Throwable {
-        if (Helper.prefs.getBoolean("switch_mainswitch", false) && Helper.prefs.getBoolean("switch_autoclean", false)) {
+        boolean cleanOnce = Helper.prefs.getBoolean("request_clean_once", false);
+        boolean autoClean = Helper.prefs.getBoolean("switch_autoclean", false);
+        if (Helper.prefs.getBoolean("switch_mainswitch", false) && (autoClean || cleanOnce)) {
             String size = Cleaner.humanReadableByteCount(Cleaner.doClean());
-            if (!Helper.prefs.getBoolean("switch_silenceclean", false)) {
+            if (cleanOnce) {
+                Helper.prefs.edit().remove("request_clean_once").apply();
+            }
+            if (cleanOnce || !Helper.prefs.getBoolean("switch_silenceclean", false)) {
                 Toast.makeText(Helper.context, "共清理 " + size + " 临时文件", Toast.LENGTH_SHORT).show();
             }
         }

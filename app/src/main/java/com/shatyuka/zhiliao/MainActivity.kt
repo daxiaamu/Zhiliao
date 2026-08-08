@@ -39,6 +39,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Slider
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.material3.Scaffold
@@ -66,6 +68,9 @@ import androidx.core.content.FileProvider
 import com.shatyuka.zhiliao.update.UpdateInfo
 import com.shatyuka.zhiliao.update.UpdateManager
 import java.io.File
+import java.util.regex.Pattern
+import java.util.regex.PatternSyntaxException
+import kotlin.math.roundToInt
 
 class MainActivity : ComponentActivity() {
     private lateinit var preferences: SharedPreferences
@@ -73,6 +78,8 @@ class MainActivity : ComponentActivity() {
 
     private var launcherEnabled by mutableStateOf(true)
     private var hookValues by mutableStateOf<Map<String, Boolean>>(emptyMap())
+    private var textValues by mutableStateOf<Map<String, String>>(emptyMap())
+    private var horizontalSensitivity by mutableIntStateOf(DEFAULT_SENSITIVITY)
     private var checking by mutableStateOf(false)
     private var availableUpdate by mutableStateOf<UpdateInfo?>(null)
     private var updateSkipped by mutableStateOf(false)
@@ -170,7 +177,21 @@ class MainActivity : ComponentActivity() {
                 ) {
                     item { HeroCard() }
                     item { SectionTitle(stringResource(R.string.module_settings)) }
-                    item { HookSettingsCard() }
+                    item { MasterSettingsCard() }
+                    HOOK_GROUPS.forEach { group ->
+                        item(group.title) { SectionTitle(stringResource(group.title)) }
+                        item("hooks-${group.title}") { HookSettingsCard(group.options) }
+                    }
+                    item { SectionTitle(stringResource(R.string.custom_filter)) }
+                    item { CustomFilterCard() }
+                    item { SectionTitle(stringResource(R.string.gesture_settings)) }
+                    item { GestureSettingsCard() }
+                    item { SectionTitle(stringResource(R.string.webview_settings)) }
+                    item { WebViewSettingsCard() }
+                    item { SectionTitle(stringResource(R.string.cleanup_settings)) }
+                    item { CleanupSettingsCard() }
+                    item { SectionTitle(stringResource(R.string.debug_settings)) }
+                    item { HookSettingsCard(DEBUG_OPTIONS) }
                     item {
                         SettingsCard {
                             SettingSwitch(
@@ -208,7 +229,7 @@ class MainActivity : ComponentActivity() {
     }
 
     @Composable
-    private fun HookSettingsCard() {
+    private fun MasterSettingsCard() {
         val master = hookValues[KEY_MASTER] ?: false
         SettingsCard {
             SettingSwitch(
@@ -216,14 +237,102 @@ class MainActivity : ComponentActivity() {
                 summary = stringResource(R.string.enable_module_summary),
                 checked = master,
             ) { setHookValue(KEY_MASTER, it) }
-            HOOK_OPTIONS.forEach { option ->
-                HorizontalDivider()
+        }
+    }
+
+    @Composable
+    private fun HookSettingsCard(options: List<HookOption>) {
+        val master = hookValues[KEY_MASTER] ?: false
+        SettingsCard {
+            options.forEachIndexed { index, option ->
+                if (index > 0) HorizontalDivider()
                 SettingSwitch(
                     title = stringResource(option.title),
                     summary = stringResource(option.summary),
                     checked = hookValues[option.key] ?: option.default,
                     enabled = master,
                 ) { setHookValue(option.key, it) }
+            }
+        }
+    }
+
+    @Composable
+    private fun CustomFilterCard() {
+        val master = hookValues[KEY_MASTER] ?: false
+        SettingsCard {
+            REGEX_OPTIONS.forEachIndexed { index, option ->
+                if (index > 0) HorizontalDivider()
+                SettingTextField(option, master, validateRegex = true)
+            }
+        }
+    }
+
+    @Composable
+    private fun GestureSettingsCard() {
+        val master = hookValues[KEY_MASTER] ?: false
+        val horizontalEnabled = hookValues[KEY_HORIZONTAL] ?: false
+        SettingsCard {
+            HookSetting(GESTURE_OPTIONS.single(), master)
+            HorizontalDivider()
+            Column(Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 14.dp)) {
+                Text(
+                    stringResource(R.string.horizontal_sensitivity_value, horizontalSensitivity),
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Medium,
+                )
+                Text(
+                    stringResource(R.string.horizontal_sensitivity_summary),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Slider(
+                    value = horizontalSensitivity.toFloat(),
+                    onValueChange = { updateHorizontalSensitivity(it.roundToInt()) },
+                    enabled = master && horizontalEnabled,
+                    valueRange = 1f..9f,
+                    steps = 7,
+                )
+            }
+        }
+    }
+
+    @Composable
+    private fun WebViewSettingsCard() {
+        val master = hookValues[KEY_MASTER] ?: false
+        SettingsCard {
+            WEBVIEW_OPTIONS.forEachIndexed { index, option ->
+                if (index > 0) HorizontalDivider()
+                HookSetting(option, master)
+            }
+            HorizontalDivider()
+            SettingTextField(JS_OPTION, master, multiline = true)
+        }
+    }
+
+    @Composable
+    private fun CleanupSettingsCard() {
+        val master = hookValues[KEY_MASTER] ?: false
+        SettingsCard {
+            CLEANUP_OPTIONS.forEachIndexed { index, option ->
+                if (index > 0) HorizontalDivider()
+                HookSetting(option, master)
+            }
+            HorizontalDivider()
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column(Modifier.weight(1f).padding(end = 16.dp)) {
+                    Text(stringResource(R.string.clean_once), fontWeight = FontWeight.Medium)
+                    Text(
+                        stringResource(R.string.clean_once_summary),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                TextButton(onClick = ::requestOneTimeClean, enabled = master) {
+                    Text(stringResource(R.string.request_clean))
+                }
             }
         }
     }
@@ -307,16 +416,83 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    @Composable
+    private fun HookSetting(option: HookOption, master: Boolean) {
+        SettingSwitch(
+            title = stringResource(option.title),
+            summary = stringResource(option.summary),
+            checked = hookValues[option.key] ?: option.default,
+            enabled = master,
+        ) { setHookValue(option.key, it) }
+    }
+
+    @Composable
+    private fun SettingTextField(
+        option: TextOption,
+        enabled: Boolean,
+        validateRegex: Boolean = false,
+        multiline: Boolean = false,
+    ) {
+        val value = textValues[option.key].orEmpty()
+        val invalidRegex = validateRegex && !isValidRegex(value)
+        OutlinedTextField(
+            value = value,
+            onValueChange = { setTextValue(option.key, it) },
+            enabled = enabled,
+            label = { Text(stringResource(option.title)) },
+            supportingText = {
+                Text(
+                    if (invalidRegex) stringResource(R.string.invalid_regex)
+                    else stringResource(option.summary),
+                )
+            },
+            isError = invalidRegex,
+            singleLine = !multiline,
+            minLines = if (multiline) 3 else 1,
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 10.dp),
+        )
+    }
+
     private fun reloadHookValues() {
         hookValues = buildMap {
             put(KEY_MASTER, preferences.getBoolean(KEY_MASTER, false))
             HOOK_OPTIONS.forEach { put(it.key, preferences.getBoolean(it.key, it.default)) }
         }
+        textValues = TEXT_OPTIONS.associate { option ->
+            option.key to preferences.getString(option.key, "").orEmpty()
+        }
+        horizontalSensitivity = preferences.getInt(KEY_SENSITIVITY, DEFAULT_SENSITIVITY)
+            .coerceIn(1, 9)
     }
 
     private fun setHookValue(key: String, value: Boolean) {
         preferences.edit().putBoolean(key, value).apply()
         hookValues = hookValues + (key to value)
+    }
+
+    private fun setTextValue(key: String, value: String) {
+        preferences.edit().putString(key, value).apply()
+        textValues = textValues + (key to value)
+    }
+
+    private fun updateHorizontalSensitivity(value: Int) {
+        horizontalSensitivity = value.coerceIn(1, 9)
+        preferences.edit().putInt(KEY_SENSITIVITY, horizontalSensitivity).apply()
+    }
+
+    private fun requestOneTimeClean() {
+        preferences.edit().putBoolean(KEY_CLEAN_ONCE, true).apply()
+        Toast.makeText(this, R.string.clean_requested, Toast.LENGTH_LONG).show()
+    }
+
+    private fun isValidRegex(value: String): Boolean {
+        if (value.isEmpty()) return true
+        return try {
+            Pattern.compile(value)
+            true
+        } catch (_: PatternSyntaxException) {
+            false
+        }
     }
 
     @Composable
@@ -627,15 +803,30 @@ class MainActivity : ComponentActivity() {
             val default: Boolean = false,
         )
 
+        private data class HookGroup(
+            val title: Int,
+            val options: List<HookOption>,
+        )
+
+        private data class TextOption(
+            val key: String,
+            val title: Int,
+            val summary: Int,
+        )
+
         private const val PREFS = "module_settings"
         private const val KEY_MASTER = "switch_mainswitch"
+        private const val KEY_HORIZONTAL = "switch_horizontal"
+        private const val KEY_SENSITIVITY = "seekbar_sensitivity"
+        private const val KEY_CLEAN_ONCE = "request_clean_once"
+        private const val DEFAULT_SENSITIVITY = 5
         private const val KEY_SKIPPED_VERSION = "skipped_update_version"
         private const val KEY_NOTIFIED_COMPATIBILITY_REVISION = "notified_compatibility_revision_v1"
         private const val STATE_PENDING_APK = "pending_apk"
         private const val NOT_DOWNLOADING = -2
         private const val GITHUB_URL = "https://github.com/daxiaamu/Zhiliao"
 
-        private val HOOK_OPTIONS = listOf(
+        private val AD_OPTIONS = listOf(
             HookOption("switch_launchad", R.string.remove_launch_ads, R.string.remove_launch_ads_summary, true),
             HookOption("switch_feedad", R.string.remove_feed_ads, R.string.remove_feed_ads_summary, true),
             HookOption("switch_answerlistad", R.string.remove_answer_list_ads, R.string.remove_answer_list_ads_summary, true),
@@ -643,18 +834,39 @@ class MainActivity : ComponentActivity() {
             HookOption("switch_sharead", R.string.remove_share_ads, R.string.remove_share_ads_summary, true),
             HookOption("switch_answerad", R.string.remove_answer_ads, R.string.remove_answer_ads_summary, true),
             HookOption("switch_searchad", R.string.remove_search_ads, R.string.remove_search_ads_summary, true),
+        )
+
+        private val CONTENT_OPTIONS = listOf(
             HookOption("switch_video", R.string.filter_video, R.string.filter_video_summary),
             HookOption("switch_removearticle", R.string.filter_article, R.string.filter_article_summary),
             HookOption("switch_pin", R.string.filter_pin, R.string.filter_pin_summary),
+            HookOption("switch_marketcard", R.string.remove_market_card, R.string.remove_market_card_summary),
+            HookOption("switch_club", R.string.remove_answer_club, R.string.remove_answer_club_summary),
+            HookOption("switch_goods", R.string.remove_goods, R.string.remove_goods_summary),
+            HookOption("switch_related", R.string.remove_related_search, R.string.remove_related_search_summary),
+            HookOption("switch_searchwords", R.string.remove_search_words, R.string.remove_search_words_summary),
+            HookOption("switch_externlink", R.string.open_external_links_in_app, R.string.open_external_links_in_app_summary),
             HookOption("switch_externlinkex", R.string.open_external_links, R.string.open_external_links_summary),
+            HookOption("switch_colormode", R.string.prevent_color_mode, R.string.prevent_color_mode_summary),
+            HookOption("switch_tag", R.string.show_card_type, R.string.show_card_type_summary),
+            HookOption("switch_statusbar", R.string.immersive_status_bar, R.string.immersive_status_bar_summary),
+            HookOption("switch_fullscreen", R.string.prevent_fullscreen, R.string.prevent_fullscreen_summary),
+            HookOption("switch_thirdpartylogin", R.string.unlock_third_party_login, R.string.unlock_third_party_login_summary),
             HookOption("switch_autorefresh", R.string.prevent_auto_refresh, R.string.prevent_auto_refresh_summary),
+        )
+
+        private val UI_OPTIONS = listOf(
             HookOption("switch_livebutton", R.string.hide_live_button, R.string.hide_live_button_summary),
             HookOption("switch_reddot", R.string.hide_red_dots, R.string.hide_red_dots_summary),
             HookOption("switch_vipbanner", R.string.hide_vip_banner, R.string.hide_vip_banner_summary),
             HookOption("switch_hotbanner", R.string.hide_hot_banner, R.string.hide_hot_banner_summary),
+            HookOption("switch_article", R.string.simplify_article_page, R.string.simplify_article_page_summary),
             HookOption("switch_feedtophot", R.string.hide_feed_top_hot, R.string.hide_feed_top_hot_summary),
             HookOption("switch_minehybrid", R.string.hide_mine_cards, R.string.hide_mine_cards_summary),
             HookOption("switch_subscribe", R.string.hide_follow_button, R.string.hide_follow_button_summary),
+        )
+
+        private val NAVIGATION_OPTIONS = listOf(
             HookOption("switch_vipnav", R.string.hide_vip_nav, R.string.hide_nav_summary),
             HookOption("switch_videonav", R.string.hide_video_nav, R.string.hide_nav_summary),
             HookOption("switch_friendnav", R.string.hide_follow_nav, R.string.hide_nav_summary),
@@ -662,8 +874,42 @@ class MainActivity : ComponentActivity() {
             HookOption("switch_findnav", R.string.hide_discover_nav, R.string.hide_nav_summary),
             HookOption("switch_navres", R.string.disable_nav_theme, R.string.disable_nav_theme_summary),
             HookOption("switch_nipple", R.string.flatten_bottom_nav, R.string.flatten_bottom_nav_summary),
-            HookOption("switch_horizontal", R.string.horizontal_answers, R.string.horizontal_answers_summary),
-            HookOption("switch_watermark", R.string.remove_web_watermark, R.string.remove_web_watermark_summary),
         )
+
+        private val GESTURE_OPTIONS = listOf(
+            HookOption(KEY_HORIZONTAL, R.string.horizontal_answers, R.string.horizontal_answers_summary),
+        )
+
+        private val WEBVIEW_OPTIONS = listOf(
+            HookOption("switch_watermark", R.string.remove_web_watermark, R.string.remove_web_watermark_summary),
+            HookOption("switch_webview_debug", R.string.enable_webview_debug, R.string.enable_webview_debug_summary),
+        )
+
+        private val CLEANUP_OPTIONS = listOf(
+            HookOption("switch_autoclean", R.string.auto_clean, R.string.auto_clean_summary),
+            HookOption("switch_silenceclean", R.string.silent_clean, R.string.silent_clean_summary),
+        )
+
+        private val DEBUG_OPTIONS = listOf(
+            HookOption("switch_hidetoast", R.string.hide_failure_toast, R.string.hide_failure_toast_summary),
+        )
+
+        private val HOOK_GROUPS = listOf(
+            HookGroup(R.string.ad_settings, AD_OPTIONS),
+            HookGroup(R.string.content_settings, CONTENT_OPTIONS),
+            HookGroup(R.string.interface_settings, UI_OPTIONS),
+            HookGroup(R.string.navigation_settings, NAVIGATION_OPTIONS),
+        )
+
+        private val REGEX_OPTIONS = listOf(
+            TextOption("edit_title", R.string.filter_title_regex, R.string.regex_filter_summary),
+            TextOption("edit_author", R.string.filter_author_regex, R.string.regex_filter_summary),
+            TextOption("edit_content", R.string.filter_content_regex, R.string.regex_filter_summary),
+        )
+
+        private val JS_OPTION = TextOption("edit_js", R.string.custom_javascript, R.string.custom_javascript_summary)
+        private val TEXT_OPTIONS = REGEX_OPTIONS + JS_OPTION
+        private val HOOK_OPTIONS = HOOK_GROUPS.flatMap { it.options } +
+            GESTURE_OPTIONS + WEBVIEW_OPTIONS + CLEANUP_OPTIONS + DEBUG_OPTIONS
     }
 }

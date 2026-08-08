@@ -8,6 +8,7 @@ import io.github.libxposed.service.XposedServiceHelper
 /** Bridges the module app to LSPosed remote preferences and keeps its scope exact. */
 object ModulePreferences {
     private const val GROUP = "zhiliao_preferences"
+    private const val LOCAL_GROUP = "module_settings"
     private const val TARGET = "com.zhihu.android"
     private var registered = false
     private var service: XposedService? = null
@@ -48,7 +49,12 @@ object ModulePreferences {
     }
 
     private fun migrateLocal(context: Context, remote: SharedPreferences) {
-        val local = context.getSharedPreferences(GROUP, Context.MODE_PRIVATE)
+        migrateLocalGroup(context, remote, GROUP)
+        migrateLocalGroup(context, remote, LOCAL_GROUP)
+    }
+
+    private fun migrateLocalGroup(context: Context, remote: SharedPreferences, group: String) {
+        val local = context.getSharedPreferences(group, Context.MODE_PRIVATE)
         if (local.all.isEmpty()) return
         val editor = remote.edit()
         local.all.forEach { (key, value) ->
