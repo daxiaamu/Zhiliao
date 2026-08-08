@@ -90,8 +90,6 @@
     <string name="flatten_bottom_nav_summary">使底部导航保持平整</string>
     <string name="horizontal_answers">左右滑动切换回答</string>
     <string name="horizontal_answers_summary">启用手势切换回答</string>
-    <string name="hide_next_answer">隐藏“下一个回答”按钮</string>
-    <string name="hide_next_answer_summary">移除回答页悬浮按钮</string>
     <string name="remove_web_watermark">移除网页水印</string>
     <string name="remove_web_watermark_summary">清理回答网页背景水印</string>
 </resources>

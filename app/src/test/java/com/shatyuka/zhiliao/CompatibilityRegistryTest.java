@@ -35,6 +35,8 @@ public class CompatibilityRegistryTest {
         initialize(40408);
         assertEquals(2, CompatibilityRegistry.getAdaptedVersions().size());
         assertEquals("国内版", CompatibilityRegistry.getAdaptedVersions().get(0).displayName);
+        assertEquals("https://pan.quark.cn/s/1bebc29ea350",
+                CompatibilityRegistry.getCompatibilityUrl());
     }
 
     @Test
@@ -42,8 +44,9 @@ public class CompatibilityRegistryTest {
         initialize(29522);
         assertEquals("10.95.0", CompatibilityRegistry.getAdaptedVersions().get(1).versionName);
 
-        String remote = "{\"schemaVersion\":1,\"revision\":2026080802,"
+        String remote = "{\"schemaVersion\":1,\"revision\":2026080803,"
                 + "\"targetPackage\":\"com.zhihu.android\","
+                + "\"compatibilityUrl\":\"https://example.com/zhihu\","
                 + "\"defaults\":{\"symbols\":{}},\"profiles\":[{"
                 + "\"id\":\"play-10.96.0-30000\",\"channel\":\"play\","
                 + "\"displayName\":\"Google Play 版\",\"versionName\":\"10.96.0\","
@@ -56,6 +59,7 @@ public class CompatibilityRegistryTest {
         assertEquals(1, CompatibilityRegistry.getAdaptedVersions().size());
         assertEquals("10.96.0", CompatibilityRegistry.getAdaptedVersions().get(0).versionName);
         assertEquals("play", CompatibilityRegistry.getAdaptedVersions().get(0).channel);
+        assertEquals("https://example.com/zhihu", CompatibilityRegistry.getCompatibilityUrl());
     }
 
     @Test

@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.shatyuka.zhiliao.Helper;
@@ -148,13 +149,19 @@ public final class ZhihuSettingsEntry implements IHook {
         ViewGroup.LayoutParams originalParams = recycler.getLayoutParams();
         parent.removeViewAt(index);
 
+        ScrollView scrollContainer = new ScrollView(parent.getContext());
+        scrollContainer.setFillViewport(true);
+        scrollContainer.setLayoutParams(originalParams);
+        parent.addView(scrollContainer, index);
+
         LinearLayout wrapper = new LinearLayout(parent.getContext());
         wrapper.setOrientation(LinearLayout.VERTICAL);
-        wrapper.setLayoutParams(originalParams);
-        parent.addView(wrapper, index);
+        scrollContainer.addView(wrapper, new ScrollView.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         wrapper.addView(createEntry(parent.getContext()));
         recycler.setLayoutParams(new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f));
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        recycler.setNestedScrollingEnabled(false);
         wrapper.addView(recycler);
     }
 

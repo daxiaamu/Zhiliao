@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "revision": 2026080802,
+  "sha256": "d86551b11c32ecd461a7a265d91edf54c5531da5b62229f86c895bccb021eafe",
+  "urls": [
+    "https://raw.githubusercontent.com/daxiaamu/Zhiliao/master/update/compatibility-v1.json",
+    "https://cdn.jsdelivr.net/gh/daxiaamu/Zhiliao@master/update/compatibility-v1.json",
+    "https://fastly.jsdelivr.net/gh/daxiaamu/Zhiliao@master/update/compatibility-v1.json",
+    "https://gcore.jsdelivr.net/gh/daxiaamu/Zhiliao@master/update/compatibility-v1.json",
+    "https://testingcf.jsdelivr.net/gh/daxiaamu/Zhiliao@master/update/compatibility-v1.json",
+    "https://cdn.statically.io/gh/daxiaamu/Zhiliao/master/update/compatibility-v1.json"
+  ]
+}

@@ -8,6 +8,7 @@ import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.ArrayList;
@@ -54,6 +55,8 @@ public final class CompatibilityRegistry {
             String remote = preferences.getString(REMOTE_CONFIG_KEY, null);
             Catalog candidate = parse(remote);
             if (candidate != null && candidate.revision >= builtIn.revision) {
+                if (candidate.compatibilityUrl.isEmpty())
+                    candidate = candidate.withCompatibilityUrl(builtIn.compatibilityUrl);
                 selected = candidate;
                 selectedRemote = true;
             }
@@ -83,6 +86,10 @@ public final class CompatibilityRegistry {
                         profile.minVersionCode, profile.maxVersionCode, profile.channel));
         }
         return result;
+    }
+
+    public static synchronized String getCompatibilityUrl() {
+        return catalog.compatibilityUrl;
     }
 
     public static synchronized String getActiveProfileId() {
@@ -172,6 +179,7 @@ public final class CompatibilityRegistry {
             if (revision < 1)
                 return null;
 
+            String compatibilityUrl = optionalHttpsUrl(root, "compatibilityUrl");
             Map<String, List<String>> defaults = readSymbols(
                     root.optJSONObject("defaults") == null ? null
                             : root.optJSONObject("defaults").optJSONObject("symbols"));
@@ -194,7 +202,7 @@ public final class CompatibilityRegistry {
                 profiles.add(new Profile(id, channel, displayName, versionName,
                         min, max, status, readSymbols(item.optJSONObject("symbols"))));
             }
-            return new Catalog(revision, defaults, profiles);
+            return new Catalog(revision, compatibilityUrl, defaults, profiles);
         } catch (Throwable ignored) {
             return null;
         }
@@ -203,6 +211,17 @@ public final class CompatibilityRegistry {
     private static String requiredText(JSONObject object, String key) throws Exception {
         String value = object.getString(key).trim();
         if (value.isEmpty() || value.length() > 100)
+            throw new IllegalArgumentException(key);
+        return value;
+    }
+
+    private static String optionalHttpsUrl(JSONObject object, String key) throws Exception {
+        String value = object.optString(key, "").trim();
+        if (value.isEmpty())
+            return "";
+        if (value.length() > 2048) throw new IllegalArgumentException(key);
+        URI uri = new URI(value);
+        if (!"https".equalsIgnoreCase(uri.getScheme()) || uri.getHost() == null)
             throw new IllegalArgumentException(key);
         return value;
     }
@@ -287,17 +306,24 @@ public final class CompatibilityRegistry {
 
     private static final class Catalog {
         final long revision;
+        final String compatibilityUrl;
         final Map<String, List<String>> defaults;
         final List<Profile> profiles;
 
-        Catalog(long revision, Map<String, List<String>> defaults, List<Profile> profiles) {
+        Catalog(long revision, String compatibilityUrl, Map<String, List<String>> defaults,
+                List<Profile> profiles) {
             this.revision = revision;
+            this.compatibilityUrl = compatibilityUrl;
             this.defaults = defaults;
             this.profiles = Collections.unmodifiableList(profiles);
         }
 
+        Catalog withCompatibilityUrl(String value) {
+            return new Catalog(revision, value, defaults, profiles);
+        }
+
         static Catalog empty() {
-            return new Catalog(0, Collections.emptyMap(), Collections.emptyList());
+            return new Catalog(0, "", Collections.emptyMap(), Collections.emptyList());
         }
     }
 }

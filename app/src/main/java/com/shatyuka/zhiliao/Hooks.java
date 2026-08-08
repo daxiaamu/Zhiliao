@@ -26,7 +26,6 @@ import com.shatyuka.zhiliao.hooks.LiveButton;
 import com.shatyuka.zhiliao.hooks.MineHybridView;
 import com.shatyuka.zhiliao.hooks.NavButton;
 import com.shatyuka.zhiliao.hooks.NavRes;
-import com.shatyuka.zhiliao.hooks.NextAnswer;
 import com.shatyuka.zhiliao.hooks.FullScreen;
 import com.shatyuka.zhiliao.hooks.RedDot;
 import com.shatyuka.zhiliao.hooks.SearchAd;
@@ -52,7 +51,6 @@ public class Hooks {
             new ShareAd(),
             new LiveButton(),
             new Horizontal(),
-            new NextAnswer(),
             new RedDot(),
             new ExternLink(),
             new VIPBanner(),

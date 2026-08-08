@@ -79,6 +79,7 @@ class MainActivity : ComponentActivity() {
     private var showUpdateDialog by mutableStateOf(false)
     private var showCompatibilityDialog by mutableStateOf(false)
     private var compatibilityEntries by mutableStateOf<List<CompatibilityRegistry.CatalogEntry>>(emptyList())
+    private var compatibilityUrl by mutableStateOf("")
     private var errorMessage by mutableStateOf<String?>(null)
     private var downloadProgress by mutableIntStateOf(NOT_DOWNLOADING)
     private var pendingInstallApk: File? = null
@@ -96,6 +97,7 @@ class MainActivity : ComponentActivity() {
                 preferences = remote
                 loadCompatibilityConfig(remote, notifyRemoteUpdate = true)
                 reloadHookValues()
+                checkCompatibilityConfig()
             }
         }
         savedInstanceState?.getString(STATE_PENDING_APK)?.let { pendingInstallApk = File(it) }
@@ -319,7 +321,9 @@ class MainActivity : ComponentActivity() {
         val info = availableUpdate
         SettingsCard {
             Row(
-                modifier = Modifier.fillMaxWidth().padding(18.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(18.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(14.dp),
             ) {
@@ -372,7 +376,10 @@ class MainActivity : ComponentActivity() {
         SettingsCard {
             HorizontalDivider()
             Row(
-                modifier = Modifier.fillMaxWidth().padding(18.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { openUrl(GITHUB_URL) }
+                    .padding(18.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Icon(painterResource(R.drawable.ic_github), contentDescription = null, modifier = Modifier.size(24.dp))
@@ -380,9 +387,11 @@ class MainActivity : ComponentActivity() {
                     Text(stringResource(R.string.github_homepage), fontWeight = FontWeight.Medium)
                     Text(stringResource(R.string.open_source_summary), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
-                IconButton(onClick = { openUrl(GITHUB_URL) }) {
-                    Icon(Icons.AutoMirrored.Outlined.OpenInNew, contentDescription = stringResource(R.string.open_link))
-                }
+                Icon(
+                    Icons.AutoMirrored.Outlined.OpenInNew,
+                    contentDescription = stringResource(R.string.open_link),
+                    modifier = Modifier.size(24.dp),
+                )
             }
             HorizontalDivider()
             Row(
@@ -403,8 +412,9 @@ class MainActivity : ComponentActivity() {
                     fontWeight = FontWeight.Medium,
                 )
                 Icon(
-                    Icons.AutoMirrored.Outlined.OpenInNew,
-                    contentDescription = stringResource(R.string.open_compatible_versions),
+                    painterResource(R.drawable.ic_cicada_outline),
+                    contentDescription = null,
+                    modifier = Modifier.size(24.dp),
                 )
             }
         }
@@ -431,8 +441,10 @@ class MainActivity : ComponentActivity() {
             confirmButton = {
                 Button(onClick = {
                     showCompatibilityDialog = false
-                    openUrl(COMPATIBILITY_URL)
-                }) { Text(stringResource(R.string.open_compatible_versions)) }
+                    openUrl(compatibilityUrl)
+                }, enabled = compatibilityUrl.isNotEmpty()) {
+                    Text(stringResource(R.string.open_compatible_versions))
+                }
             },
             dismissButton = {
                 TextButton(onClick = { showCompatibilityDialog = false }) {
@@ -504,6 +516,7 @@ class MainActivity : ComponentActivity() {
     private fun loadCompatibilityConfig(source: SharedPreferences, notifyRemoteUpdate: Boolean) {
         CompatibilityRegistry.initialize(resources, source, -1)
         compatibilityEntries = CompatibilityRegistry.getAdaptedVersions()
+        compatibilityUrl = CompatibilityRegistry.getCompatibilityUrl()
         val revision = CompatibilityRegistry.getRevision()
         val lastNotified = source.getLong(KEY_NOTIFIED_COMPATIBILITY_REVISION, 0)
         if (notifyRemoteUpdate && CompatibilityRegistry.isRemoteConfigActive()
@@ -519,6 +532,14 @@ class MainActivity : ComponentActivity() {
         if (!CompatibilityRegistry.installRemoteConfig(preferences, json, expectedSha256)) return false
         loadCompatibilityConfig(preferences, notifyRemoteUpdate = true)
         return true
+    }
+
+    private fun checkCompatibilityConfig() {
+        updateManager.checkCompatibilityConfig { json, sha256, error ->
+            if (error == null && json != null && sha256 != null) {
+                applyDownloadedCompatibilityConfig(json, sha256)
+            }
+        }
     }
 
     private fun downloadUpdate(info: UpdateInfo) {
@@ -604,8 +625,6 @@ class MainActivity : ComponentActivity() {
         private const val STATE_PENDING_APK = "pending_apk"
         private const val NOT_DOWNLOADING = -2
         private const val GITHUB_URL = "https://github.com/daxiaamu/Zhiliao"
-        // Replace with the public compatibility/download page when its final URL is available.
-        private const val COMPATIBILITY_URL = "$GITHUB_URL/releases"
 
         private val HOOK_OPTIONS = listOf(
             HookOption("switch_launchad", R.string.remove_launch_ads, R.string.remove_launch_ads_summary, true),
@@ -636,7 +655,6 @@ class MainActivity : ComponentActivity() {
             HookOption("switch_navres", R.string.disable_nav_theme, R.string.disable_nav_theme_summary),
             HookOption("switch_nipple", R.string.flatten_bottom_nav, R.string.flatten_bottom_nav_summary),
             HookOption("switch_horizontal", R.string.horizontal_answers, R.string.horizontal_answers_summary),
-            HookOption("switch_nextanswer", R.string.hide_next_answer, R.string.hide_next_answer_summary),
             HookOption("switch_watermark", R.string.remove_web_watermark, R.string.remove_web_watermark_summary),
         )
     }

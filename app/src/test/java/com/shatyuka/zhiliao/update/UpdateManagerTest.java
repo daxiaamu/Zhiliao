@@ -33,4 +33,17 @@ public class UpdateManagerTest {
         assertEquals(primary, urls.get(0));
         assertEquals("https://ghfast.top/" + primary, urls.get(1));
     }
+
+    @Test
+    public void compatibilityManifestHasSixCdnSources() {
+        assertEquals(6, UpdateManager.COMPATIBILITY_MANIFEST_URLS.length);
+        for (String source : UpdateManager.COMPATIBILITY_MANIFEST_URLS)
+            org.junit.Assert.assertTrue(source.startsWith("https://"));
+    }
+
+    @Test
+    public void compatibilityTextSha256MatchesKnownVector() throws Exception {
+        assertEquals("ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad",
+                UpdateManager.sha256("abc"));
+    }
 }

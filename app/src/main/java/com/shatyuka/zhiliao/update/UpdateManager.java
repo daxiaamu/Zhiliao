@@ -44,6 +44,15 @@ public final class UpdateManager {
             "https://cdn.statically.io/gh/daxiaamu/Zhiliao/master/update/update-beta.json"
     };
 
+    public static final String[] COMPATIBILITY_MANIFEST_URLS = {
+            "https://raw.githubusercontent.com/daxiaamu/Zhiliao/master/update/compatibility-manifest.json",
+            "https://cdn.jsdelivr.net/gh/daxiaamu/Zhiliao@master/update/compatibility-manifest.json",
+            "https://fastly.jsdelivr.net/gh/daxiaamu/Zhiliao@master/update/compatibility-manifest.json",
+            "https://gcore.jsdelivr.net/gh/daxiaamu/Zhiliao@master/update/compatibility-manifest.json",
+            "https://testingcf.jsdelivr.net/gh/daxiaamu/Zhiliao@master/update/compatibility-manifest.json",
+            "https://cdn.statically.io/gh/daxiaamu/Zhiliao/master/update/compatibility-manifest.json"
+    };
+
     private static final String[] RELEASE_PROXY_PREFIXES = {
             "https://ghfast.top/",
             "https://gh-proxy.com/",
@@ -63,16 +72,23 @@ public final class UpdateManager {
         void onComplete(File apk, Throwable error);
     }
 
+    public interface CompatibilityCallback {
+        void onComplete(String json, String sha256, Throwable error);
+    }
+
     private static volatile UpdateManager instance;
 
     private final Context context;
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
+    private final ExecutorService compatibilityExecutor = Executors.newSingleThreadExecutor();
     private final List<CheckCallback> checkCallbacks = new ArrayList<>();
     private final List<DownloadCallback> downloadCallbacks = new ArrayList<>();
 
     private boolean checking;
     private boolean downloading;
+    private boolean compatibilityChecking;
+    private final List<CompatibilityCallback> compatibilityCallbacks = new ArrayList<>();
     private UpdateInfo sessionResult;
     private long automaticPromptedVersion = -1;
 
@@ -134,6 +150,71 @@ public final class UpdateManager {
             }
             finishDownload(apk, error);
         });
+    }
+
+    /** Compatibility metadata and config both fail over across independent CDN endpoints. */
+    public synchronized void checkCompatibilityConfig(CompatibilityCallback callback) {
+        compatibilityCallbacks.add(callback);
+        if (compatibilityChecking)
+            return;
+        compatibilityChecking = true;
+        compatibilityExecutor.execute(() -> {
+            CompatibilityPayload payload = null;
+            Throwable error = null;
+            try {
+                payload = fetchCompatibilityPayload();
+            } catch (Throwable throwable) {
+                error = throwable;
+            }
+            finishCompatibilityCheck(payload, error);
+        });
+    }
+
+    private CompatibilityPayload fetchCompatibilityPayload() throws Exception {
+        Throwable lastError = null;
+        for (String manifestSource : COMPATIBILITY_MANIFEST_URLS) {
+            try {
+                JSONObject manifest = fetchJson(manifestSource, 256 * 1024);
+                if (manifest.getInt("schemaVersion") != 1)
+                    throw new IllegalStateException("Unsupported compatibility manifest");
+                String expectedSha256 = manifest.getString("sha256").trim().toLowerCase(Locale.ROOT);
+                if (!expectedSha256.matches("[0-9a-f]{64}"))
+                    throw new IllegalStateException("Invalid compatibility SHA-256");
+                JSONArray sources = manifest.getJSONArray("urls");
+                Throwable configError = null;
+                for (int i = 0; i < sources.length(); i++) {
+                    try {
+                        String json = fetchText(requireHttps(sources.getString(i)), 256 * 1024);
+                        if (!expectedSha256.equals(sha256(json)))
+                            throw new SecurityException("Compatibility SHA-256 mismatch");
+                        return new CompatibilityPayload(json, expectedSha256);
+                    } catch (Throwable throwable) {
+                        configError = throwable;
+                    }
+                }
+                throw new IllegalStateException("All compatibility config CDNs failed", configError);
+            } catch (Throwable throwable) {
+                lastError = throwable;
+            }
+        }
+        throw new IllegalStateException("All compatibility manifest CDNs failed", lastError);
+    }
+
+    private static JSONObject fetchJson(String source, int maxBytes) throws Exception {
+        return new JSONObject(fetchText(source, maxBytes));
+    }
+
+    private static String fetchText(String source, int maxBytes) throws Exception {
+        HttpURLConnection connection = openHttps(source);
+        try {
+            int responseCode = connection.getResponseCode();
+            if (responseCode < 200 || responseCode >= 300)
+                throw new IllegalStateException("HTTP " + responseCode);
+            requireHttps(connection.getURL().toString());
+            return readText(connection.getInputStream(), maxBytes);
+        } finally {
+            connection.disconnect();
+        }
     }
 
     private UpdateInfo fetchUpdateInfo() throws Exception {
@@ -326,6 +407,11 @@ public final class UpdateManager {
         return hex(digest.digest());
     }
 
+    static String sha256(String value) throws Exception {
+        return hex(MessageDigest.getInstance("SHA-256")
+                .digest(value.getBytes(StandardCharsets.UTF_8)));
+    }
+
     private static String hex(byte[] value) {
         StringBuilder builder = new StringBuilder(value.length * 2);
         for (byte item : value)
@@ -372,5 +458,29 @@ public final class UpdateManager {
             for (DownloadCallback callback : callbacks)
                 callback.onComplete(apk, error);
         });
+    }
+
+    private void finishCompatibilityCheck(CompatibilityPayload payload, Throwable error) {
+        final List<CompatibilityCallback> callbacks;
+        synchronized (this) {
+            compatibilityChecking = false;
+            callbacks = new ArrayList<>(compatibilityCallbacks);
+            compatibilityCallbacks.clear();
+        }
+        mainHandler.post(() -> {
+            for (CompatibilityCallback callback : callbacks)
+                callback.onComplete(payload == null ? null : payload.json,
+                        payload == null ? null : payload.sha256, error);
+        });
+    }
+
+    private static final class CompatibilityPayload {
+        final String json;
+        final String sha256;
+
+        CompatibilityPayload(String json, String sha256) {
+            this.json = json;
+            this.sha256 = sha256;
+        }
     }
 }
