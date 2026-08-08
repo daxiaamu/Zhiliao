@@ -31,6 +31,8 @@ import com.shatyuka.zhiliao.hooks.VIPBanner;
 import com.shatyuka.zhiliao.hooks.ZhihuSettingsEntry;
 
 import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
@@ -288,6 +290,40 @@ public class HookTest {
     @Test
     public void autoRefreshTest() {
         checkHook(new AutoRefresh());
+    }
+
+    @Test
+    public void autoRefresh114TargetsOnlyAutomaticGate() throws Throwable {
+        PackageInfo domestic114 = null;
+        for (PackageInfo packageInfo : packageInfos) {
+            if (packageInfo.versionCode == 40408) {
+                domestic114 = packageInfo;
+                break;
+            }
+        }
+        assertNotNull("Zhihu 11.4.0 compatibility fixture is missing", domestic114);
+
+        resetState(AutoRefresh.class);
+        Helper.packageInfo = new android.content.pm.PackageInfo();
+        Helper.packageInfo.versionCode = domestic114.versionCode;
+        Helper.versionCode = domestic114.versionCode;
+        try (InputStream compatibility = new FileInputStream(
+                "src/main/assets/compatibility/compatibility-v1.json")) {
+            CompatibilityRegistry.initialize(compatibility, domestic114.versionCode);
+        }
+        Helper.initSharedClasses(domestic114.classLoader);
+        new AutoRefresh().init(domestic114.classLoader);
+
+        Field targetField = AutoRefresh.class.getDeclaredField("tryRefresh");
+        targetField.setAccessible(true);
+        Method target = (Method) targetField.get(null);
+        assertNotNull("Automatic refresh gate was not resolved", target);
+        assertEquals("com.zhihu.android.app.feed.util.FeedAutoRefreshManager",
+                target.getDeclaringClass().getName());
+        assertEquals(void.class, target.getReturnType());
+        assertEquals(4, target.getParameterCount());
+        assertEquals(long.class, target.getParameterTypes()[0]);
+        assertEquals(int.class, target.getParameterTypes()[1]);
     }
 
     @Test
