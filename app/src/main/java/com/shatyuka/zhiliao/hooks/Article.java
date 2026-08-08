@@ -24,55 +24,53 @@ public class Article implements IHook {
 
     @Override
     public void init(ClassLoader classLoader) throws Throwable {
-        if (Helper.versionCode > 2614) {
+        try {
+            ContentMixAdapter = classLoader.loadClass("com.zhihu.android.mix.a.a");
+            getItemCount = ContentMixAdapter.getMethod("getItemCount");
+        } catch (Throwable e) {
             try {
-                ContentMixAdapter = classLoader.loadClass("com.zhihu.android.mix.a.a");
+                ContentMixAdapter = classLoader.loadClass("com.zhihu.android.mix.b.a");
                 getItemCount = ContentMixAdapter.getMethod("getItemCount");
-            } catch (Throwable e) {
+            } catch (Throwable e2) {
                 try {
-                    ContentMixAdapter = classLoader.loadClass("com.zhihu.android.mix.b.a");
+                    ContentMixAdapter = classLoader.loadClass("com.zhihu.android.mix.adapter.a");
                     getItemCount = ContentMixAdapter.getMethod("getItemCount");
-                } catch (Throwable e2) {
-                    try {
-                        ContentMixAdapter = classLoader.loadClass("com.zhihu.android.mix.adapter.a");
-                        getItemCount = ContentMixAdapter.getMethod("getItemCount");
-                    } catch (Throwable e3) {
-                        ContentMixAdapter = classLoader.loadClass("com.zhihu.android.mix.adapter.ContentMixAdapter");
-                        getItemCount = ContentMixAdapter.getMethod("getItemCount");
-                    }
+                } catch (Throwable e3) {
+                    ContentMixAdapter = classLoader.loadClass("com.zhihu.android.mix.adapter.ContentMixAdapter");
+                    getItemCount = ContentMixAdapter.getMethod("getItemCount");
                 }
             }
-            ContentMixPagerFragment = classLoader.loadClass("com.zhihu.android.mix.fragment.ContentMixPagerFragment");
-            Class<?> Fragment = classLoader.loadClass("androidx.fragment.app.Fragment");
-            ContentMixAdapter_fragment = Helper.findFieldByType(ContentMixAdapter, Fragment);
-            if (ContentMixAdapter_fragment == null) {
-                throw new NoSuchFieldException("fragment");
-            }
-            ContentMixAdapter_fragment.setAccessible(true);
-            try {
-                ContentMixPagerFragment_type = ContentMixPagerFragment.getField("c");
-                if (ContentMixPagerFragment_type.getType() != String.class)
-                    throw new NoSuchFieldException("type");
-            } catch (NoSuchFieldException e) {
-                ContentMixPagerFragment_type = ContentMixPagerFragment.getField("t");
-                if (ContentMixPagerFragment_type.getType() != String.class)
-                    throw new NoSuchFieldException("type");
-            }
+        }
+        ContentMixPagerFragment = classLoader.loadClass("com.zhihu.android.mix.fragment.ContentMixPagerFragment");
+        Class<?> Fragment = classLoader.loadClass("androidx.fragment.app.Fragment");
+        ContentMixAdapter_fragment = Helper.findFieldByType(ContentMixAdapter, Fragment);
+        if (ContentMixAdapter_fragment == null) {
+            throw new NoSuchFieldException("fragment");
+        }
+        ContentMixAdapter_fragment.setAccessible(true);
+        try {
+            ContentMixPagerFragment_type = ContentMixPagerFragment.getField("c");
+            if (ContentMixPagerFragment_type.getType() != String.class)
+                throw new NoSuchFieldException("type");
+        } catch (NoSuchFieldException e) {
+            ContentMixPagerFragment_type = ContentMixPagerFragment.getField("t");
+            if (ContentMixPagerFragment_type.getType() != String.class)
+                throw new NoSuchFieldException("type");
         }
     }
 
     @Override
     public void hook() throws Throwable {
-        if (Helper.versionCode > 2614) { // after 6.61.0
-            if (Helper.prefs.getBoolean("switch_mainswitch", false) && Helper.prefs.getBoolean("switch_article", false)) {
-                XposedBridge.hookMethod(getItemCount, new XC_MethodHook() {
-                    @Override
-                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                        if (param.thisObject.getClass() == ContentMixAdapter && ContentMixPagerFragment_type.get(ContentMixAdapter_fragment.get(param.thisObject)) == "article")
-                            param.setResult(1);
-                    }
-                });
-            }
+        if (Helper.prefs.getBoolean("switch_mainswitch", false) && Helper.prefs.getBoolean("switch_article", false)) {
+            XposedBridge.hookMethod(getItemCount, new XC_MethodHook() {
+                @Override
+                protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                    if (param.thisObject.getClass() == ContentMixAdapter
+                            && "article".equals(ContentMixPagerFragment_type.get(
+                            ContentMixAdapter_fragment.get(param.thisObject))))
+                        param.setResult(1);
+                }
+            });
         }
     }
 }

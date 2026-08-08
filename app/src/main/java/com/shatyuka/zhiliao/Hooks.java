@@ -2,6 +2,9 @@ package com.shatyuka.zhiliao;
 
 import android.widget.Toast;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.shatyuka.zhiliao.hooks.AnswerAd;
 import com.shatyuka.zhiliao.hooks.AnswerListAd;
 import com.shatyuka.zhiliao.hooks.Article;
@@ -74,15 +77,22 @@ public class Hooks {
     };
 
     public static void init(final ClassLoader classLoader) {
+        List<String> failedHooks = new ArrayList<>();
         for (IHook hook : hooks) {
             try {
                 hook.init(classLoader);
                 hook.hook();
             } catch (Throwable e) {
-                if (!Helper.prefs.getBoolean("switch_hidetoast", false))
-                    Helper.toast(hook.getName() + "功能加载失败，可能不支持当前版本知乎: " + Helper.packageInfo.versionName, Toast.LENGTH_LONG);
-                XposedBridge.log("[Zhiliao] " + e);
+                failedHooks.add(hook.getName());
+                XposedBridge.log("[Zhiliao] Hook failed: "
+                        + hook.getClass().getSimpleName() + ": " + e);
             }
+        }
+        if (!failedHooks.isEmpty()
+                && Helper.prefs.getBoolean("switch_mainswitch", false)
+                && !Helper.prefs.getBoolean("switch_hidetoast", false)) {
+            Helper.toast("部分功能与当前知乎版本不兼容（" + failedHooks.size()
+                    + " 项），详情请查看 LSPosed 日志", Toast.LENGTH_LONG);
         }
     }
 }

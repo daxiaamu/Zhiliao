@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "revision": 2026080801,
+  "targetPackage": "com.zhihu.android",
+  "defaults": {
+    "symbols": {
+      "searchResponseConverters": [
+        "com.zhihu.android.net.b.b",
+        "com.zhihu.android.net.c.b",
+        "com.zhihu.android.net.d.b",
+        "com.zhihu.android.c3.f.c",
+        "com.zhihu.android.e3.f.b",
+        "retrofit2.b.a.c",
+        "retrofit2.p.a.c",
+        "j.b.a.c"
+      ]
+    }
+  },
+  "profiles": [
+    {
+      "id": "domestic-11.4.0-40408",
+      "channel": "domestic",
+      "displayName": "国内版",
+      "versionName": "11.4.0",
+      "minVersionCode": 40408,
+      "maxVersionCode": 40408,
+      "status": "adapted",
+      "symbols": {}
+    },
+    {
+      "id": "play-10.95.0-29522",
+      "channel": "play",
+      "displayName": "Google Play 版",
+      "versionName": "10.95.0",
+      "minVersionCode": 29522,
+      "maxVersionCode": 29522,
+      "status": "adapted",
+      "symbols": {
+        "searchResponseConverters": [
+          "retrofit2.converter.jackson.c"
+        ]
+      }
+    }
+  ]
+}

@@ -31,39 +31,31 @@ public class NextAnswer implements IHook {
 
     @Override
     public void init(ClassLoader classLoader) throws Throwable {
-        if (Helper.versionCode > 2614) {
-            NextContentAnimationView = classLoader.loadClass("com.zhihu.android.mix.widget.NextContentAnimationView");
-            try {
-                NextContentAnimationView_short = classLoader.loadClass("com.zhihu.android.mixshortcontainer.function.next.NextContentAnimationView");
-                MixShortContainerFragment = classLoader.loadClass("com.zhihu.android.mixshortcontainer.MixShortContainerFragment");
-            } catch (Throwable ignored) {
-            }
+        NextContentAnimationView = classLoader.loadClass("com.zhihu.android.mix.widget.NextContentAnimationView");
+        try {
+            NextContentAnimationView_short = classLoader.loadClass("com.zhihu.android.mixshortcontainer.function.next.NextContentAnimationView");
+            MixShortContainerFragment = classLoader.loadClass("com.zhihu.android.mixshortcontainer.MixShortContainerFragment");
+        } catch (Throwable ignored) {
+        }
 
+        if (MixShortContainerFragment != null) {
             initView = Helper.getMethodByParameterTypes(MixShortContainerFragment, 0, View.class);
             initLayout = Helper.getMethodByParameterTypes(MixShortContainerFragment, 1, View.class);
 
-            if (MixShortContainerFragment != null) {
-                String[] nextButton_names = new String[]{"t", "f", "e", "M", "L", "d"};
-                for (String name : nextButton_names) {
-                    try {
-                        Field field = MixShortContainerFragment.getDeclaredField(name);
-                        if (field.getType().getName().equals("com.zhihu.android.base.widget.ZHFrameLayout")) {
-                            nextButton = field;
-                            break;
-                        }
-                    } catch (NoSuchFieldException ignore) {
-                    }
+            // Field names are obfuscated differently between domestic and Play builds.
+            // Match the stable widget type instead of maintaining a per-version name list.
+            for (Field field : MixShortContainerFragment.getDeclaredFields()) {
+                if (field.getType().getName().equals("com.zhihu.android.base.widget.ZHFrameLayout")) {
+                    nextButton = field;
+                    nextButton.setAccessible(true);
+                    break;
                 }
-                if (nextButton == null) {
-                    throw new NoSuchFieldException("nextButton");
-                }
-                nextButton.setAccessible(true);
             }
+        }
 
-            try {
-                PopupMenuNextButton = classLoader.loadClass("com.zhihu.android.feature.short_container_feature.ui.widget.next.PopupMenuNextButton");
-            } catch (ClassNotFoundException ignored) {
-            }
+        try {
+            PopupMenuNextButton = classLoader.loadClass("com.zhihu.android.feature.short_container_feature.ui.widget.next.PopupMenuNextButton");
+        } catch (ClassNotFoundException ignored) {
         }
     }
 
@@ -71,7 +63,7 @@ public class NextAnswer implements IHook {
     public void hook() throws Throwable {
         if (Helper.prefs.getBoolean("switch_mainswitch", false) && Helper.prefs.getBoolean("switch_nextanswer", false)) {
             XposedHelpers.findAndHookMethod(Helper.AnswerPagerFragment, "setupNextAnswerBtn", XC_MethodReplacement.returnConstant(null));
-            if (initView != null) {
+            if (initView != null && nextButton != null) {
                 XposedBridge.hookMethod(initView, new XC_MethodHook() {
                     @Override
                     protected void afterHookedMethod(MethodHookParam param) throws Throwable {
@@ -79,7 +71,7 @@ public class NextAnswer implements IHook {
                     }
                 });
             }
-            if (initLayout != null) {
+            if (initLayout != null && nextButton != null) {
                 XposedBridge.hookMethod(initLayout, new XC_MethodHook() {
                     @Override
                     protected void afterHookedMethod(MethodHookParam param) throws Throwable {
@@ -88,23 +80,21 @@ public class NextAnswer implements IHook {
                 });
             }
 
-            if (Helper.versionCode > 2614) {
-                XposedHelpers.findAndHookMethod(ViewGroup.class, "addView", View.class, ViewGroup.LayoutParams.class, new XC_MethodHook() {
-                    @Override
-                    protected void afterHookedMethod(MethodHookParam param) {
-                        if (NextContentAnimationView.isAssignableFrom(param.args[0].getClass()) || (NextContentAnimationView_short != null && NextContentAnimationView_short.isAssignableFrom(param.args[0].getClass())))
-                            ((View) param.args[0]).setVisibility(View.GONE);
-                    }
-                });
+            XposedHelpers.findAndHookMethod(ViewGroup.class, "addView", View.class, ViewGroup.LayoutParams.class, new XC_MethodHook() {
+                @Override
+                protected void afterHookedMethod(MethodHookParam param) {
+                    if (NextContentAnimationView.isAssignableFrom(param.args[0].getClass()) || (NextContentAnimationView_short != null && NextContentAnimationView_short.isAssignableFrom(param.args[0].getClass())))
+                        ((View) param.args[0]).setVisibility(View.GONE);
+                }
+            });
 
-                XposedHelpers.findAndHookMethod(View.class, "setVisibility", int.class, new XC_MethodHook() {
-                    @Override
-                    protected void beforeHookedMethod(MethodHookParam param) {
-                        if (NextContentAnimationView.isAssignableFrom(param.thisObject.getClass()) || (NextContentAnimationView_short != null && NextContentAnimationView_short.isAssignableFrom(param.args[0].getClass())))
-                            param.args[0] = View.GONE;
-                    }
-                });
-            }
+            XposedHelpers.findAndHookMethod(View.class, "setVisibility", int.class, new XC_MethodHook() {
+                @Override
+                protected void beforeHookedMethod(MethodHookParam param) {
+                    if (NextContentAnimationView.isAssignableFrom(param.thisObject.getClass()) || (NextContentAnimationView_short != null && NextContentAnimationView_short.isAssignableFrom(param.thisObject.getClass())))
+                        param.args[0] = View.GONE;
+                }
+            });
 
             if (PopupMenuNextButton != null) {
                 XposedBridge.hookAllConstructors(PopupMenuNextButton, new XC_MethodHook() {

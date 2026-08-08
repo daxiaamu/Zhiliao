@@ -86,46 +86,44 @@ public class Horizontal implements IHook {
         ActionSheetLayout_callbackList = ActionSheetLayout.getDeclaredField("z");
         ActionSheetLayout_callbackList.setAccessible(true);
 
-        if (Helper.versionCode > 2614) {
-            MixPagerContainer = classLoader.loadClass("com.zhihu.android.mix.widget.MixPagerContainer");
-            Class<?> VerticalPagerContainer = classLoader.loadClass("com.zhihu.android.bootstrap.vertical_pager.VerticalPagerContainer");
-            Helper.findClass(classLoader, "com.zhihu.android.bootstrap.vertical_pager.",
-                    (Class<?> clazz) -> {
-                        if (!clazz.isEnum())
-                            return false;
-                        UserAction = clazz;
-                        return true;
-                    });
-            if (UserAction == null)
-                throw new ClassNotFoundException("com.zhihu.android.bootstrap.vertical_pager.UserAction");
+        MixPagerContainer = classLoader.loadClass("com.zhihu.android.mix.widget.MixPagerContainer");
+        Class<?> VerticalPagerContainer = classLoader.loadClass("com.zhihu.android.bootstrap.vertical_pager.VerticalPagerContainer");
+        Helper.findClass(classLoader, "com.zhihu.android.bootstrap.vertical_pager.",
+                (Class<?> clazz) -> {
+                    if (!clazz.isEnum())
+                        return false;
+                    UserAction = clazz;
+                    return true;
+                });
+        if (UserAction == null)
+            throw new ClassNotFoundException("com.zhihu.android.bootstrap.vertical_pager.UserAction");
 
-            try {
-                nextAnswer = VerticalPagerContainer.getMethod("a", UserAction);
-                lastAnswer = VerticalPagerContainer.getMethod("b", UserAction);
-            } catch (NoSuchMethodException e) {
-                nextAnswer = Helper.getMethodByParameterTypes(VerticalPagerContainer, 1, UserAction);
-                lastAnswer = Helper.getMethodByParameterTypes(VerticalPagerContainer, 0, UserAction);
-            }
-
-            UserAction_DRAG_UP = UserAction.getField("DRAG_UP");
-            UserAction_DRAG_DOWN = UserAction.getField("DRAG_DOWN");
-
-            ViewPager2 = classLoader.loadClass("androidx.viewpager2.widget.ViewPager2");
-            setUserInputEnabled = ViewPager2.getMethod("setUserInputEnabled", boolean.class);
-
-            ContentMixPagerFragment = classLoader.loadClass("com.zhihu.android.mix.fragment.ContentMixPagerFragment");
-            MixPagerContainerFragment = classLoader.loadClass("com.zhihu.android.mix.fragment.MixPagerContainerFragment");
-
-            Field[] fields = MixPagerContainerFragment.getDeclaredFields();
-            for (Field field : fields) {
-                if (field.getType() == MixPagerContainer) {
-                    MixPagerContainerFragment_mixPagerContainer = field;
-                    break;
-                }
-            }
-            if (MixPagerContainerFragment_mixPagerContainer == null)
-                throw new NoSuchFieldException("com.zhihu.android.mix.fragment.MixPagerContainerFragment.mixPagerContainer");
+        try {
+            nextAnswer = VerticalPagerContainer.getMethod("a", UserAction);
+            lastAnswer = VerticalPagerContainer.getMethod("b", UserAction);
+        } catch (NoSuchMethodException e) {
+            nextAnswer = Helper.getMethodByParameterTypes(VerticalPagerContainer, 1, UserAction);
+            lastAnswer = Helper.getMethodByParameterTypes(VerticalPagerContainer, 0, UserAction);
         }
+
+        UserAction_DRAG_UP = UserAction.getField("DRAG_UP");
+        UserAction_DRAG_DOWN = UserAction.getField("DRAG_DOWN");
+
+        ViewPager2 = classLoader.loadClass("androidx.viewpager2.widget.ViewPager2");
+        setUserInputEnabled = ViewPager2.getMethod("setUserInputEnabled", boolean.class);
+
+        ContentMixPagerFragment = classLoader.loadClass("com.zhihu.android.mix.fragment.ContentMixPagerFragment");
+        MixPagerContainerFragment = classLoader.loadClass("com.zhihu.android.mix.fragment.MixPagerContainerFragment");
+
+        Field[] fields = MixPagerContainerFragment.getDeclaredFields();
+        for (Field field : fields) {
+            if (field.getType() == MixPagerContainer) {
+                MixPagerContainerFragment_mixPagerContainer = field;
+                break;
+            }
+        }
+        if (MixPagerContainerFragment_mixPagerContainer == null)
+            throw new NoSuchFieldException("com.zhihu.android.mix.fragment.MixPagerContainerFragment.mixPagerContainer");
 
         height = Helper.scale * 160 / 5;
         width = height / 2;
@@ -216,8 +214,7 @@ public class Horizontal implements IHook {
                 }
             });
 
-            if (Helper.versionCode > 2614) {
-                XposedBridge.hookMethod(Helper.getMethodByParameterTypes(ContentMixPagerFragment, MotionEvent.class), new XC_MethodHook() {
+            XposedBridge.hookMethod(Helper.getMethodByParameterTypes(ContentMixPagerFragment, MotionEvent.class), new XC_MethodHook() {
                     float old_x = 0;
                     float old_y = 0;
                     long time = 0;
@@ -255,8 +252,7 @@ public class Horizontal implements IHook {
                                 break;
                         }
                     }
-                });
-            }
+            });
 
             XposedHelpers.findAndHookMethod(WebView.class, "onTouchEvent", MotionEvent.class, new XC_MethodHook() {
                 @Override

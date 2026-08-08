@@ -31,8 +31,15 @@ import com.shatyuka.zhiliao.hooks.VIPBanner;
 import com.shatyuka.zhiliao.hooks.ZhihuSettingsEntry;
 
 import org.junit.Test;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.Opcodes;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -74,7 +81,7 @@ public class HookTest {
                 PackageInfo packageInfo = new PackageInfo();
                 packageInfo.name = fileName.substring(0, index2);
                 packageInfo.versionCode = Integer.parseInt(fileName.substring(index2 + 1, index1));
-                packageInfo.classLoader = new URLClassLoader(new URL[]{file.toURI().toURL()});
+                packageInfo.classLoader = new Dex2JarClassLoader(new URL[]{file.toURI().toURL()});
                 packageInfos.add(packageInfo);
             } catch (Throwable e) {
                 e.printStackTrace();
@@ -101,6 +108,57 @@ public class HookTest {
         checkHook(hook, 0);
     }
 
+    /**
+     * dex2jar sometimes copies DEX-only top-level static/final interface flags into JVM
+     * class access flags. ART accepts the original DEX, but the JVM rejects the converted
+     * class before compatibility tests can inspect it. Normalize only those impossible JVM
+     * flag combinations while leaving methods, fields and bytecode untouched.
+     */
+    static final class Dex2JarClassLoader extends URLClassLoader {
+        Dex2JarClassLoader(URL[] urls) {
+            super(urls);
+        }
+
+        @Override
+        protected Class<?> findClass(String name) throws ClassNotFoundException {
+            URL resource = findResource(name.replace('.', '/') + ".class");
+            if (resource == null)
+                return super.findClass(name);
+            try (InputStream input = resource.openStream()) {
+                byte[] bytes = input.readAllBytes();
+                byte[] normalized = normalizeClassAccess(bytes);
+                return defineClass(name, normalized, 0, normalized.length);
+            } catch (IOException | IllegalArgumentException error) {
+                throw new ClassNotFoundException(name, error);
+            }
+        }
+
+        private static byte[] normalizeClassAccess(byte[] bytes) {
+            ClassReader reader = new ClassReader(bytes);
+            ClassWriter writer = new ClassWriter(0);
+            reader.accept(new ClassVisitor(Opcodes.ASM9, writer) {
+                @Override
+                public void visit(int version, int access, String name, String signature,
+                                  String superName, String[] interfaces) {
+                    super.visit(version, legalAccess(access), name, signature, superName, interfaces);
+                }
+
+                @Override
+                public void visitInnerClass(String name, String outerName, String innerName, int access) {
+                    super.visitInnerClass(name, outerName, innerName, legalAccess(access));
+                }
+
+                private int legalAccess(int access) {
+                    access &= ~Opcodes.ACC_STATIC;
+                    if ((access & Opcodes.ACC_ABSTRACT) != 0)
+                        access &= ~Opcodes.ACC_FINAL;
+                    return access;
+                }
+            }, 0);
+            return writer.toByteArray();
+        }
+    }
+
     void checkHook(IHook hook, int minimumVersionCode) {
         for (PackageInfo packageInfo : packageInfos) {
             if (packageInfo.versionCode < minimumVersionCode)
@@ -110,6 +168,10 @@ public class HookTest {
                 Helper.packageInfo = new android.content.pm.PackageInfo();
                 Helper.packageInfo.versionCode = packageInfo.versionCode;
                 Helper.versionCode = packageInfo.versionCode;
+                try (InputStream compatibility = new FileInputStream(
+                        "src/main/assets/compatibility/compatibility-v1.json")) {
+                    CompatibilityRegistry.initialize(compatibility, packageInfo.versionCode);
+                }
                 Helper.initSharedClasses(packageInfo.classLoader);
                 hook.init(packageInfo.classLoader);
             } catch (Throwable e) {
@@ -165,12 +227,12 @@ public class HookTest {
 
     @Test
     public void horizontalTest() {
-        checkHook(new Horizontal());
+        checkHook(new Horizontal(), 2615);
     }
 
     @Test
     public void nextAnswerTest() {
-        checkHook(new NextAnswer());
+        checkHook(new NextAnswer(), 2615);
     }
 
     @Test
@@ -200,7 +262,7 @@ public class HookTest {
 
     @Test
     public void articleTest() {
-        checkHook(new Article());
+        checkHook(new Article(), 2615);
     }
 
     @Test

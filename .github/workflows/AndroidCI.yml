@@ -45,8 +45,8 @@ jobs:
             echo releaseStoreFile='${{ github.workspace }}/key.jks' >> gradle.properties
             echo ${{ secrets.KEY_STORE }} | base64 --decode > key.jks
           fi
-      - name: Build with Gradle
-        run: bash ./gradlew -PappVerName=${{ env.VERSION }} assembleRelease
+      - name: Test compatibility config and build with Gradle
+        run: bash ./gradlew -PappVerName=${{ env.VERSION }} testDebugUnitTest assembleRelease
       - name: Upload built apk
         if: success()
         uses: actions/upload-artifact@v4

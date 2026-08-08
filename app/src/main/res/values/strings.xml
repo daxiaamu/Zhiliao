@@ -10,12 +10,12 @@
     <string name="update_and_about">更新与关于</string>
     <string name="check_for_updates">检查更新</string>
     <string name="check_now">检查</string>
-    <string name="update_security_summary">多源下载，安装前校验 SHA-256</string>
+    <string name="update_security_summary">点击检查知了模块版本更新</string>
     <string name="github_homepage">GitHub 项目主页</string>
     <string name="open_source_summary">查看源码、问题反馈与发行版本</string>
     <string name="compatibility_title">已适配的知乎版本</string>
-    <string name="compatibility_domestic">国内版：11.4.0（40408）</string>
-    <string name="compatibility_play">Google Play 版：10.95.0（29522）</string>
+    <string name="view_compatible_versions">查看已适配版本</string>
+    <string name="open_compatible_versions">前往下载页面</string>
     <string name="open_link">打开链接</string>
     <string name="update_skipped">已跳过 %1$s</string>
     <string name="update_found">发现 %1$s</string>
@@ -29,6 +29,7 @@
     <string name="check_update_failed">检查更新失败：%1$s</string>
     <string name="download_failed">下载或校验失败：%1$s</string>
     <string name="already_latest">当前已是最新版本</string>
+    <string name="compatibility_config_updated">新适配配置已加载，请重启知乎后生效</string>
     <string name="verified_apk_missing">已校验的 APK 文件不存在</string>
     <string name="allow_unknown_sources">请允许知了安装未知应用，然后返回</string>
     <string name="open_installer_failed">无法打开系统安装器：%1$s</string>

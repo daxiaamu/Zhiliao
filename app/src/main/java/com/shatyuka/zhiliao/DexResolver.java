@@ -11,6 +11,7 @@ import org.luckypray.dexkit.result.ClassData;
 import org.luckypray.dexkit.result.MethodData;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.shatyuka.zhiliao.xposed.XposedBridge;
@@ -134,6 +135,73 @@ public final class DexResolver {
             XposedBridge.log("[Zhiliao] DexKit method-owner query " + key + " failed: " + throwable);
         }
         return null;
+    }
+
+    /** Finds every method matching a stable signature when the owner name is obfuscated. */
+    public static synchronized List<Method> findMethods(String key, String searchPackage,
+                                                         String methodName, Class<?> returnType,
+                                                         Class<?>... parameterTypes) {
+        List<Method> methods = loadCachedMethods(key, methodName, returnType, parameterTypes);
+        if (!methods.isEmpty())
+            return methods;
+        if (bridge == null || classLoader == null)
+            return methods;
+        try {
+            String[] parameterTypeNames = new String[parameterTypes.length];
+            for (int i = 0; i < parameterTypes.length; i++)
+                parameterTypeNames[i] = parameterTypes[i].getName();
+            List<MethodData> result = bridge.findMethod(FindMethod.create()
+                    .searchPackages(searchPackage)
+                    .matcher(MethodMatcher.create()
+                            .name(methodName)
+                            .returnType(returnType.getName())
+                            .paramTypes(parameterTypeNames)));
+            for (MethodData data : result) {
+                try {
+                    Method candidate = data.getMethodInstance(classLoader);
+                    if (candidate.getReturnType() == returnType)
+                        methods.add(candidate);
+                } catch (Throwable ignored) {
+                }
+            }
+            if (!methods.isEmpty()) {
+                StringBuilder cached = new StringBuilder();
+                for (Method method : methods) {
+                    if (cached.length() > 0)
+                        cached.append(';');
+                    cached.append(method.getDeclaringClass().getName()).append('#')
+                            .append(method.getName());
+                }
+                save(key, cached.toString());
+            }
+        } catch (Throwable throwable) {
+            XposedBridge.log("[Zhiliao] DexKit methods query " + key + " failed: " + throwable);
+        }
+        return methods;
+    }
+
+    private static List<Method> loadCachedMethods(String key, String methodName,
+                                                   Class<?> returnType,
+                                                   Class<?>[] parameterTypes) {
+        List<Method> result = new ArrayList<>();
+        String value = load(key);
+        if (value == null || classLoader == null)
+            return result;
+        try {
+            for (String item : value.split(";")) {
+                int separator = item.lastIndexOf('#');
+                if (separator <= 0 || !methodName.equals(item.substring(separator + 1)))
+                    return new ArrayList<>();
+                Class<?> owner = classLoader.loadClass(item.substring(0, separator));
+                Method method = owner.getMethod(methodName, parameterTypes);
+                if (method.getReturnType() != returnType)
+                    return new ArrayList<>();
+                result.add(method);
+            }
+            return result;
+        } catch (Throwable ignored) {
+            return new ArrayList<>();
+        }
     }
 
     private static Class<?> loadCachedClass(String key) {

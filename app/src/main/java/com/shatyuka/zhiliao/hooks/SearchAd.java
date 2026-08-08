@@ -1,5 +1,7 @@
 package com.shatyuka.zhiliao.hooks;
 
+import com.shatyuka.zhiliao.DexResolver;
+import com.shatyuka.zhiliao.CompatibilityRegistry;
 import com.shatyuka.zhiliao.Helper;
 
 import java.lang.reflect.Field;
@@ -25,23 +27,20 @@ public class SearchAd implements IHook {
 
     @Override
     public void init(ClassLoader classLoader) throws Throwable {
-        String[] classNames = {
-                "com.zhihu.android.net.b.b",
-                "com.zhihu.android.net.c.b",
-                "com.zhihu.android.net.d.b",
-                "com.zhihu.android.c3.f.c",
-                "com.zhihu.android.e3.f.b",
-                "retrofit2.b.a.c",
-                "retrofit2.p.a.c",
-                "j.b.a.c"
-        };
+        converts.clear();
         Class<?> JacksonResponseBodyConverter;
-        for (String className : classNames) {
+        for (String className : CompatibilityRegistry.getSymbolCandidates(
+                "searchResponseConverters")) {
             try {
                 JacksonResponseBodyConverter = classLoader.loadClass(className);
                 converts.add(JacksonResponseBodyConverter.getMethod("convert", Object.class));
             } catch (ClassNotFoundException | NoSuchMethodException ignored) {
             }
+        }
+        if (converts.isEmpty()) {
+            converts.addAll(DexResolver.findMethods(
+                    "search_response_converters", "retrofit2", "convert",
+                    Object.class, Object.class));
         }
         if (converts.isEmpty()) {
             throw new ClassNotFoundException("retrofit2.converter.jackson.JacksonResponseBodyConverter");

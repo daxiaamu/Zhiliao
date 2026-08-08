@@ -53,6 +53,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.clickable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -76,6 +77,8 @@ class MainActivity : ComponentActivity() {
     private var availableUpdate by mutableStateOf<UpdateInfo?>(null)
     private var updateSkipped by mutableStateOf(false)
     private var showUpdateDialog by mutableStateOf(false)
+    private var showCompatibilityDialog by mutableStateOf(false)
+    private var compatibilityEntries by mutableStateOf<List<CompatibilityRegistry.CatalogEntry>>(emptyList())
     private var errorMessage by mutableStateOf<String?>(null)
     private var downloadProgress by mutableIntStateOf(NOT_DOWNLOADING)
     private var pendingInstallApk: File? = null
@@ -84,12 +87,14 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         preferences = getSharedPreferences(PREFS, MODE_PRIVATE)
+        loadCompatibilityConfig(preferences, notifyRemoteUpdate = false)
         enableEdgeToEdge()
         launcherEnabled = isLauncherEnabled()
         reloadHookValues()
         ModulePreferences.connect(this) { remote ->
             runOnUiThread {
                 preferences = remote
+                loadCompatibilityConfig(remote, notifyRemoteUpdate = true)
                 reloadHookValues()
             }
         }
@@ -183,6 +188,7 @@ class MainActivity : ComponentActivity() {
             }
 
             availableUpdate?.takeIf { showUpdateDialog }?.let { UpdateDialog(it) }
+            if (showCompatibilityDialog) CompatibilityDialog()
             errorMessage?.let { message ->
                 AlertDialog(
                     onDismissRequest = { errorMessage = null },
@@ -379,34 +385,61 @@ class MainActivity : ComponentActivity() {
                 }
             }
             HorizontalDivider()
-            CompatibilityFooter()
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { showCompatibilityDialog = true }
+                    .padding(18.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Icon(
+                    painterResource(R.drawable.ic_cicada_outline),
+                    contentDescription = null,
+                    modifier = Modifier.size(24.dp),
+                )
+                Text(
+                    stringResource(R.string.view_compatible_versions),
+                    modifier = Modifier.weight(1f).padding(horizontal = 14.dp),
+                    fontWeight = FontWeight.Medium,
+                )
+                Icon(
+                    Icons.AutoMirrored.Outlined.OpenInNew,
+                    contentDescription = stringResource(R.string.open_compatible_versions),
+                )
+            }
         }
     }
 
     @Composable
-    private fun CompatibilityFooter() {
-        Column(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(2.dp),
-        ) {
-            Text(
-                stringResource(R.string.compatibility_title),
-                style = MaterialTheme.typography.labelLarge,
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Text(
-                stringResource(R.string.compatibility_domestic),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Text(
-                stringResource(R.string.compatibility_play),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
+    private fun CompatibilityDialog() {
+        AlertDialog(
+            onDismissRequest = { showCompatibilityDialog = false },
+            icon = { Icon(painterResource(R.drawable.ic_cicada_outline), contentDescription = null) },
+            title = { Text(stringResource(R.string.compatibility_title)) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    compatibilityEntries.forEach { entry ->
+                        val versions = if (entry.minVersionCode == entry.maxVersionCode) {
+                            entry.minVersionCode.toString()
+                        } else {
+                            "${entry.minVersionCode}–${entry.maxVersionCode}"
+                        }
+                        Text("${entry.displayName}：${entry.versionName}（$versions）")
+                    }
+                }
+            },
+            confirmButton = {
+                Button(onClick = {
+                    showCompatibilityDialog = false
+                    openUrl(COMPATIBILITY_URL)
+                }) { Text(stringResource(R.string.open_compatible_versions)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showCompatibilityDialog = false }) {
+                    Text(stringResource(android.R.string.cancel))
+                }
+            },
+        )
     }
 
     @Composable
@@ -465,6 +498,27 @@ class MainActivity : ComponentActivity() {
                 showUpdateDialog = true
             }
         }
+    }
+
+    /** Also call this after a future compatibility-config download is installed. */
+    private fun loadCompatibilityConfig(source: SharedPreferences, notifyRemoteUpdate: Boolean) {
+        CompatibilityRegistry.initialize(resources, source, -1)
+        compatibilityEntries = CompatibilityRegistry.getAdaptedVersions()
+        val revision = CompatibilityRegistry.getRevision()
+        val lastNotified = source.getLong(KEY_NOTIFIED_COMPATIBILITY_REVISION, 0)
+        if (notifyRemoteUpdate && CompatibilityRegistry.isRemoteConfigActive()
+            && revision > lastNotified
+        ) {
+            source.edit().putLong(KEY_NOTIFIED_COMPATIBILITY_REVISION, revision).apply()
+            Toast.makeText(this, R.string.compatibility_config_updated, Toast.LENGTH_LONG).show()
+        }
+    }
+
+    /** Single completion path for the future cloud downloader: verify, persist, load, then notify. */
+    private fun applyDownloadedCompatibilityConfig(json: String, expectedSha256: String): Boolean {
+        if (!CompatibilityRegistry.installRemoteConfig(preferences, json, expectedSha256)) return false
+        loadCompatibilityConfig(preferences, notifyRemoteUpdate = true)
+        return true
     }
 
     private fun downloadUpdate(info: UpdateInfo) {
@@ -546,9 +600,12 @@ class MainActivity : ComponentActivity() {
         private const val PREFS = "module_settings"
         private const val KEY_MASTER = "switch_mainswitch"
         private const val KEY_SKIPPED_VERSION = "skipped_update_version"
+        private const val KEY_NOTIFIED_COMPATIBILITY_REVISION = "notified_compatibility_revision_v1"
         private const val STATE_PENDING_APK = "pending_apk"
         private const val NOT_DOWNLOADING = -2
         private const val GITHUB_URL = "https://github.com/daxiaamu/Zhiliao"
+        // Replace with the public compatibility/download page when its final URL is available.
+        private const val COMPATIBILITY_URL = "$GITHUB_URL/releases"
 
         private val HOOK_OPTIONS = listOf(
             HookOption("switch_launchad", R.string.remove_launch_ads, R.string.remove_launch_ads_summary, true),
