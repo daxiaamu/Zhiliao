@@ -1,18 +1,18 @@
 {
   "schemaVersion": 1,
-  "versionCode": 2026080810,
-  "versionName": "26.08.08-beta.10",
-  "url": "https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.10/Zhiliao_26.08.08-beta.10.apk",
+  "versionCode": 2026080901,
+  "versionName": "26.08.09-beta.1",
+  "url": "https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.09-beta.1/Zhiliao_26.08.09-beta.1.apk",
   "urls": [
-    "https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.10/Zhiliao_26.08.08-beta.10.apk",
-    "https://ghfast.top/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.10/Zhiliao_26.08.08-beta.10.apk",
-    "https://gh-proxy.com/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.10/Zhiliao_26.08.08-beta.10.apk",
-    "https://ghproxy.net/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.10/Zhiliao_26.08.08-beta.10.apk",
-    "https://gh.llkk.cc/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.10/Zhiliao_26.08.08-beta.10.apk",
-    "https://ghp.keleyaa.com/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.10/Zhiliao_26.08.08-beta.10.apk",
-    "https://gh.monlor.com/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.10/Zhiliao_26.08.08-beta.10.apk"
+    "https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.09-beta.1/Zhiliao_26.08.09-beta.1.apk",
+    "https://ghfast.top/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.09-beta.1/Zhiliao_26.08.09-beta.1.apk",
+    "https://gh-proxy.com/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.09-beta.1/Zhiliao_26.08.09-beta.1.apk",
+    "https://ghproxy.net/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.09-beta.1/Zhiliao_26.08.09-beta.1.apk",
+    "https://gh.llkk.cc/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.09-beta.1/Zhiliao_26.08.09-beta.1.apk",
+    "https://ghp.keleyaa.com/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.09-beta.1/Zhiliao_26.08.09-beta.1.apk",
+    "https://gh.monlor.com/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.09-beta.1/Zhiliao_26.08.09-beta.1.apk"
   ],
-  "sha256": "ecbd10fc76d4bafb12ef086fac3b7449e50731d428ee2e45d293bfd5bbca6522",
-  "changelog": "本预发布版重点修复 Google Play 版知乎 10.95.0 的启动兼容性，并完善 LSPosed 作用域申请。\n\n- 修复“移除启动广告并加速启动”导致 Play 版停留在启动页的问题\n- 移除会返回非法空 URL 和误判启动状态的宽泛 Hook，保留知乎原生无广告启动路径\n- 模块设置页恢复时检测作用域；缺失时通过 LSPosed API 102 发起一次用户审批请求\n- 已在 arm64 Play 版 10.95.0（versionCode 29522）真机验证\n- 冷启动约 3.4 秒，无相关崩溃、ANR、Hook failed 或启动广告 URL 异常\n\nAPK SHA-256: ecbd10fc76d4bafb12ef086fac3b7449e50731d428ee2e45d293bfd5bbca6522",
-  "publishedAt": "2026-08-08T17:07:35Z"
+  "sha256": "089db1b9a4e62422256e87737115ccd09c07c985811031b8ad8869c7563efb8d",
+  "changelog": "本预发布版新增“关闭搜索栏左侧营销位”，并修复启动时“领现金”短暂闪现。\n\n- 直接短路知乎首页营销位业务方法，避免先显示再隐藏\n- 国内版知乎 11.4.0（versionCode 40408）已通过兼容配置适配\n- 未知版本可由 DexKit 根据稳定调用特征自动解析并按版本缓存\n- 云兼容配置修订至 2026080901，保留结构化兜底\n- 真机冷启动逐帧检查 108 帧，未发现营销位闪现\n- targetSdk/compileSdk 37，LSPosed API 102\n\nAPK SHA-256：`089db1b9a4e62422256e87737115ccd09c07c985811031b8ad8869c7563efb8d`\n",
+  "publishedAt": "2026-08-08T18:58:33Z"
 }
