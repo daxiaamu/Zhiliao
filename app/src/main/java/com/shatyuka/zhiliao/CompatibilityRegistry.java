@@ -115,7 +115,7 @@ public final class CompatibilityRegistry {
             return false;
         Catalog candidate = parse(json);
         if (!sha256(json).equalsIgnoreCase(expectedSha256.trim()) || candidate == null
-                || candidate.revision <= catalog.revision)
+                || candidate.revision < catalog.revision)
             return false;
         if (!preferences.edit().putString(REMOTE_CONFIG_KEY, json).commit())
             return false;

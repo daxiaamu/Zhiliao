@@ -4,6 +4,7 @@
     <string name="app_desc">净化知乎体验的 LSPosed/Xposed 模块</string>
     <string name="app_tagline">少一点打扰，多一点内容</string>
     <string name="version_format">版本 %1$s</string>
+    <string name="cloud_config_version_format">云配版本 %1$d</string>
     <string name="module_settings">模块设置</string>
     <string name="show_launcher_icon">显示桌面图标</string>
     <string name="show_launcher_icon_summary">隐藏后仍可从 LSPosed 打开</string>

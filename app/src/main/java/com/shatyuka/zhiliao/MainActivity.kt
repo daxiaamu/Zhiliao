@@ -80,6 +80,7 @@ class MainActivity : ComponentActivity() {
     private var showCompatibilityDialog by mutableStateOf(false)
     private var compatibilityEntries by mutableStateOf<List<CompatibilityRegistry.CatalogEntry>>(emptyList())
     private var compatibilityUrl by mutableStateOf("")
+    private var remoteCompatibilityRevision by mutableStateOf<Long?>(null)
     private var errorMessage by mutableStateOf<String?>(null)
     private var downloadProgress by mutableIntStateOf(NOT_DOWNLOADING)
     private var pendingInstallApk: File? = null
@@ -97,11 +98,11 @@ class MainActivity : ComponentActivity() {
                 preferences = remote
                 loadCompatibilityConfig(remote, notifyRemoteUpdate = true)
                 reloadHookValues()
-                checkCompatibilityConfig()
             }
         }
         savedInstanceState?.getString(STATE_PENDING_APK)?.let { pendingInstallApk = File(it) }
         setContent { ZhiliaoApp() }
+        checkCompatibilityConfig()
         checkForUpdates(manual = false)
     }
 
@@ -255,6 +256,13 @@ class MainActivity : ComponentActivity() {
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
+                    remoteCompatibilityRevision?.let { revision ->
+                        Text(
+                            stringResource(R.string.cloud_config_version_format, revision),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
                 }
             }
         }
@@ -513,6 +521,9 @@ class MainActivity : ComponentActivity() {
         compatibilityEntries = CompatibilityRegistry.getAdaptedVersions()
         compatibilityUrl = CompatibilityRegistry.getCompatibilityUrl()
         val revision = CompatibilityRegistry.getRevision()
+        remoteCompatibilityRevision = revision.takeIf {
+            CompatibilityRegistry.isRemoteConfigActive()
+        }
         val lastNotified = source.getLong(KEY_NOTIFIED_COMPATIBILITY_REVISION, 0)
         if (notifyRemoteUpdate && CompatibilityRegistry.isRemoteConfigActive()
             && revision > lastNotified
@@ -524,8 +535,12 @@ class MainActivity : ComponentActivity() {
 
     /** Single completion path for the future cloud downloader: verify, persist, load, then notify. */
     private fun applyDownloadedCompatibilityConfig(json: String, expectedSha256: String): Boolean {
+        val previousRevision = CompatibilityRegistry.getRevision()
         if (!CompatibilityRegistry.installRemoteConfig(preferences, json, expectedSha256)) return false
-        loadCompatibilityConfig(preferences, notifyRemoteUpdate = true)
+        loadCompatibilityConfig(
+            preferences,
+            notifyRemoteUpdate = CompatibilityRegistry.getRevision() > previousRevision,
+        )
         return true
     }
 
