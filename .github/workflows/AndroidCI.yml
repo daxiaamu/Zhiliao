@@ -38,13 +38,16 @@ jobs:
       - name: Write key
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/master'
         run: |
-          if [ ! -z "${{ secrets.KEY_STORE }}" ]; then
-            echo releaseStorePassword='${{ secrets.KEY_STORE_PASSWORD }}' >> gradle.properties
-            echo releaseKeyAlias='${{ secrets.ALIAS }}' >> gradle.properties
-            echo releaseKeyPassword='${{ secrets.KEY_PASSWORD }}' >> gradle.properties
-            echo releaseStoreFile='${{ github.workspace }}/key.jks' >> gradle.properties
-            echo ${{ secrets.KEY_STORE }} | base64 --decode > key.jks
+          if [ -z "${{ secrets.KEY_STORE }}" ] || [ -z "${{ secrets.KEY_STORE_PASSWORD }}" ] || \
+             [ -z "${{ secrets.ALIAS }}" ] || [ -z "${{ secrets.KEY_PASSWORD }}" ]; then
+            echo 'Release signing secrets are missing' >&2
+            exit 1
           fi
+          echo releaseStorePassword='${{ secrets.KEY_STORE_PASSWORD }}' >> gradle.properties
+          echo releaseKeyAlias='${{ secrets.ALIAS }}' >> gradle.properties
+          echo releaseKeyPassword='${{ secrets.KEY_PASSWORD }}' >> gradle.properties
+          echo releaseStoreFile='${{ github.workspace }}/key.jks' >> gradle.properties
+          echo '${{ secrets.KEY_STORE }}' | base64 --decode > key.jks
       - name: Test compatibility config and build with Gradle
         run: bash ./gradlew -PappVerName=${{ env.VERSION }} testDebugUnitTest assembleRelease
       - name: Upload built apk
