@@ -1,18 +1,18 @@
 {
   "schemaVersion": 1,
-  "versionCode": 202608088,
-  "versionName": "26.08.08-beta.8",
-  "url": "https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.8/Zhiliao_26.08.08-beta.8.apk",
+  "versionCode": 202608089,
+  "versionName": "26.08.08-beta.9",
+  "url": "https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.9/Zhiliao_26.08.08-beta.9.apk",
   "urls": [
-    "https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.8/Zhiliao_26.08.08-beta.8.apk",
-    "https://ghfast.top/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.8/Zhiliao_26.08.08-beta.8.apk",
-    "https://gh-proxy.com/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.8/Zhiliao_26.08.08-beta.8.apk",
-    "https://ghproxy.net/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.8/Zhiliao_26.08.08-beta.8.apk",
-    "https://gh.llkk.cc/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.8/Zhiliao_26.08.08-beta.8.apk",
-    "https://ghp.keleyaa.com/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.8/Zhiliao_26.08.08-beta.8.apk",
-    "https://gh.monlor.com/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.8/Zhiliao_26.08.08-beta.8.apk"
+    "https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.9/Zhiliao_26.08.08-beta.9.apk",
+    "https://ghfast.top/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.9/Zhiliao_26.08.08-beta.9.apk",
+    "https://gh-proxy.com/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.9/Zhiliao_26.08.08-beta.9.apk",
+    "https://ghproxy.net/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.9/Zhiliao_26.08.08-beta.9.apk",
+    "https://gh.llkk.cc/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.9/Zhiliao_26.08.08-beta.9.apk",
+    "https://ghp.keleyaa.com/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.9/Zhiliao_26.08.08-beta.9.apk",
+    "https://gh.monlor.com/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.9/Zhiliao_26.08.08-beta.9.apk"
   ],
-  "sha256": "1fc42d26203944f65a214e2435bc38550ea4a39470b513015bc22ed95c7a5cea",
-  "changelog": "## 本版变化\n\n- 将“移除启动广告”和“加速启动页”合并为一个开关，统一跳过广告请求、展示与等待链路。\n- 新增 Google Play 10.95.0 的安全无广告启动路径；真机冷启动进入主页约 3.38 秒，热启动约 113 毫秒。\n- 设置页移除重复的“知了”文案，保留标题与简洁蝉图标 Banner。\n- 新增每日知乎版本哨兵：检测国内版与 Google Play 版、校验包名/版本/官方证书、运行 Hook 回归测试，并在新版本通过时创建人工审核的云配置候选 PR。\n- Actions、兼容配置发布与更新清单工作流升级到 Node 24 运行时。\n\n## 已验证版本\n\n- 国内版：11.4.0（40408）\n- Google Play 版：10.95.0（29522）\n\nAPK SHA-256：`1FC42D26203944F65A214E2435BC38550EA4A39470B513015BC22ED95C7A5CEA`\n\n正式证书 SHA-256：`A3278D7A7A11754FE8D8042A0E2666CAEF60505DBD97DB7A1127B88BB622C7F9`",
-  "publishedAt": "2026-08-08T07:10:57Z"
+  "sha256": "ed21d7687b64f8c236a845f5c9f6814aa41b6c91013c5ef34ea928c4a7b677e6",
+  "changelog": "- Banner 在有效云配置加载后显示云配版本；无云配置或获取失败时不显示\n- 云配置检查不再依赖 LSPosed 服务连接，首次安装也能自动获取\n- 同修订云配置经 SHA-256 校验后可缓存，但不会误报为配置更新\n- 桌面图标统一为 Banner 同款抽象知了图标，支持自适应与单色图标\n- 更新知乎 APK 永久分享链接",
+  "publishedAt": "2026-08-08T07:53:48Z"
 }
