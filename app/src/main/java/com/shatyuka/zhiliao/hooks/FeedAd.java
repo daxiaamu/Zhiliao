@@ -49,16 +49,13 @@ public class FeedAd implements IHook {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                 if (Helper.prefs.getBoolean("switch_mainswitch", false) && Helper.prefs.getBoolean("switch_feedad", true)) {
-                    if (param.args[0] == null)
+                    if (param.args.length == 0 || param.args[0] == null
+                            || !FeedList_data.getDeclaringClass().isInstance(param.args[0]))
                         return;
-                    List<?> list = (List<?>) FeedList_data.get(param.args[0]);
-                    if (list == null || list.isEmpty())
+                    Object data = FeedList_data.get(param.args[0]);
+                    if (!(data instanceof List))
                         return;
-                    for (int i = list.size() - 1; i >= 0; i--) {
-                        if (list.get(i).getClass() == FeedAdvert) {
-                            list.remove(i);
-                        }
-                    }
+                    removeFeedAdItems((List<?>) data);
                 }
             }
         });
@@ -66,16 +63,10 @@ public class FeedAd implements IHook {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) {
                 if (Helper.prefs.getBoolean("switch_mainswitch", false) && Helper.prefs.getBoolean("switch_feedad", true)) {
-                    if (param.args[1] == null)
+                    if (param.args.length < 2 || !(param.args[1] instanceof List))
                         return;
                     List<?> list = (List<?>) param.args[1];
-                    if (list.isEmpty())
-                        return;
-                    for (int i = list.size() - 1; i >= 0; i--) {
-                        if (list.get(i).getClass() == FeedAdvert) {
-                            list.remove(i);
-                        }
-                    }
+                    removeFeedAdItems(list);
                 }
             }
         });
@@ -88,7 +79,7 @@ public class FeedAd implements IHook {
                     }
                 }
             });
-        } catch (NoSuchMethodError ignore) {
+        } catch (Throwable ignore) {
         }
         try {
             XposedHelpers.findAndHookMethod(Helper.MorphAdHelper, "resolve", Context.class, ListAd, Boolean.class, new XC_MethodHook() {
@@ -99,23 +90,37 @@ public class FeedAd implements IHook {
                     }
                 }
             });
-        } catch (NoSuchMethodError ignore) {
+        } catch (Throwable ignore) {
         }
-        XposedHelpers.findAndHookMethod(Advert, "isSlidingWindow", new XC_MethodHook() {
-            @Override
-            protected void beforeHookedMethod(MethodHookParam param) {
-                if (Helper.prefs.getBoolean("switch_mainswitch", false) && Helper.prefs.getBoolean("switch_feedad", true)) {
-                    param.setResult(false);
+        try {
+            XposedHelpers.findAndHookMethod(Advert, "isSlidingWindow", new XC_MethodHook() {
+                @Override
+                protected void beforeHookedMethod(MethodHookParam param) {
+                    if (Helper.prefs.getBoolean("switch_mainswitch", false) && Helper.prefs.getBoolean("switch_feedad", true)) {
+                        param.setResult(false);
+                    }
                 }
-            }
-        });
-        XposedHelpers.findAndHookMethod(Ad, "isFloatAdCard", new XC_MethodHook() {
-            @Override
-            protected void beforeHookedMethod(MethodHookParam param) {
-                if (Helper.prefs.getBoolean("switch_mainswitch", false) && Helper.prefs.getBoolean("switch_feedad", true)) {
-                    param.setResult(false);
+            });
+        } catch (Throwable ignore) {
+        }
+        try {
+            XposedHelpers.findAndHookMethod(Ad, "isFloatAdCard", new XC_MethodHook() {
+                @Override
+                protected void beforeHookedMethod(MethodHookParam param) {
+                    if (Helper.prefs.getBoolean("switch_mainswitch", false) && Helper.prefs.getBoolean("switch_feedad", true)) {
+                        param.setResult(false);
+                    }
                 }
-            }
-        });
+            });
+        } catch (Throwable ignore) {
+        }
+    }
+
+    private static void removeFeedAdItems(List<?> list) {
+        for (int i = list.size() - 1; i >= 0; i--) {
+            Object item = list.get(i);
+            if (item != null && FeedAdvert.isInstance(item))
+                list.remove(i);
+        }
     }
 }

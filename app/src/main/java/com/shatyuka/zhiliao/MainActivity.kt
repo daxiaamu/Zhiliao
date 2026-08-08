@@ -377,7 +377,6 @@ class MainActivity : ComponentActivity() {
     @Composable
     private fun AboutCard() {
         SettingsCard {
-            AboutRow(Icons.Outlined.Info, stringResource(R.string.lsposed_entry_title), stringResource(R.string.lsposed_entry_summary))
             HorizontalDivider()
             Row(
                 modifier = Modifier.fillMaxWidth().padding(18.dp),

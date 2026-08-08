@@ -16,8 +16,6 @@
     <string name="github_homepage">GitHub 项目主页</string>
     <string name="open_source_summary">查看源码、问题反馈与发行版本</string>
     <string name="open_link">打开链接</string>
-    <string name="lsposed_entry_title">LSPosed 设置入口</string>
-    <string name="lsposed_entry_summary">隐藏桌面图标不会影响此入口</string>
     <string name="update_skipped">已跳过 %1$s</string>
     <string name="update_found">发现 %1$s</string>
     <string name="update_dialog_title">发现知了更新</string>
