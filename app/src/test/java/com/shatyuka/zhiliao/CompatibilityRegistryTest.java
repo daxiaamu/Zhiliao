@@ -38,6 +38,27 @@ public class CompatibilityRegistryTest {
     }
 
     @Test
+    public void cloudReloadUpdatesPlayVersionShownInAbout() throws Exception {
+        initialize(29522);
+        assertEquals("10.95.0", CompatibilityRegistry.getAdaptedVersions().get(1).versionName);
+
+        String remote = "{\"schemaVersion\":1,\"revision\":2026080802,"
+                + "\"targetPackage\":\"com.zhihu.android\","
+                + "\"defaults\":{\"symbols\":{}},\"profiles\":[{"
+                + "\"id\":\"play-10.96.0-30000\",\"channel\":\"play\","
+                + "\"displayName\":\"Google Play 版\",\"versionName\":\"10.96.0\","
+                + "\"minVersionCode\":30000,\"maxVersionCode\":30000,"
+                + "\"status\":\"adapted\",\"symbols\":{}}]}";
+        InputStream input = new java.io.ByteArrayInputStream(remote.getBytes(StandardCharsets.UTF_8));
+        CompatibilityRegistry.initialize(input, 30000);
+
+        assertEquals("play-10.96.0-30000", CompatibilityRegistry.getActiveProfileId());
+        assertEquals(1, CompatibilityRegistry.getAdaptedVersions().size());
+        assertEquals("10.96.0", CompatibilityRegistry.getAdaptedVersions().get(0).versionName);
+        assertEquals("play", CompatibilityRegistry.getAdaptedVersions().get(0).channel);
+    }
+
+    @Test
     public void invalidOrUnsupportedConfigFailsClosed() {
         String invalid = "{\"schemaVersion\":2,\"revision\":1,"
                 + "\"targetPackage\":\"com.zhihu.android\",\"profiles\":[]}";
