@@ -27,7 +27,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.OpenInNew
 import androidx.compose.material.icons.outlined.Download
-import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -57,7 +56,6 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -73,7 +71,6 @@ class MainActivity : ComponentActivity() {
     private val updateManager by lazy { UpdateManager.get(this) }
 
     private var launcherEnabled by mutableStateOf(true)
-    private var automaticUpdates by mutableStateOf(true)
     private var hookValues by mutableStateOf<Map<String, Boolean>>(emptyMap())
     private var checking by mutableStateOf(false)
     private var availableUpdate by mutableStateOf<UpdateInfo?>(null)
@@ -89,7 +86,6 @@ class MainActivity : ComponentActivity() {
         preferences = getSharedPreferences(PREFS, MODE_PRIVATE)
         enableEdgeToEdge()
         launcherEnabled = isLauncherEnabled()
-        automaticUpdates = preferences.getBoolean(KEY_AUTO_UPDATE, true)
         reloadHookValues()
         ModulePreferences.connect(this) { remote ->
             runOnUiThread {
@@ -99,7 +95,7 @@ class MainActivity : ComponentActivity() {
         }
         savedInstanceState?.getString(STATE_PENDING_APK)?.let { pendingInstallApk = File(it) }
         setContent { ZhiliaoApp() }
-        if (automaticUpdates) checkForUpdates(manual = false)
+        checkForUpdates(manual = false)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -177,21 +173,11 @@ class MainActivity : ComponentActivity() {
                                 launcherEnabled = it
                                 applyLauncherVisibility(it)
                             }
-                            HorizontalDivider()
-                            SettingSwitch(
-                                title = stringResource(R.string.automatic_updates),
-                                summary = stringResource(R.string.automatic_updates_summary),
-                                checked = automaticUpdates,
-                            ) {
-                                automaticUpdates = it
-                                preferences.edit().putBoolean(KEY_AUTO_UPDATE, it).apply()
-                            }
                         }
                     }
                     item { SectionTitle(stringResource(R.string.update_and_about)) }
                     item { UpdateCard() }
                     item { AboutCard() }
-                    item { CompatibilityFooter() }
                     item { Spacer(Modifier.height(12.dp)) }
                 }
             }
@@ -392,6 +378,8 @@ class MainActivity : ComponentActivity() {
                     Icon(Icons.AutoMirrored.Outlined.OpenInNew, contentDescription = stringResource(R.string.open_link))
                 }
             }
+            HorizontalDivider()
+            CompatibilityFooter()
         }
     }
 
@@ -418,20 +406,6 @@ class MainActivity : ComponentActivity() {
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-        }
-    }
-
-    @Composable
-    private fun AboutRow(icon: ImageVector, title: String, summary: String) {
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(18.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Icon(icon, contentDescription = null, modifier = Modifier.size(24.dp))
-            Column(Modifier.padding(start = 14.dp)) {
-                Text(title, fontWeight = FontWeight.Medium)
-                Text(summary, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
         }
     }
 
@@ -571,7 +545,6 @@ class MainActivity : ComponentActivity() {
 
         private const val PREFS = "module_settings"
         private const val KEY_MASTER = "switch_mainswitch"
-        private const val KEY_AUTO_UPDATE = "auto_update"
         private const val KEY_SKIPPED_VERSION = "skipped_update_version"
         private const val STATE_PENDING_APK = "pending_apk"
         private const val NOT_DOWNLOADING = -2

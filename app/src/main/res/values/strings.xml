@@ -7,8 +7,6 @@
     <string name="module_settings">模块设置</string>
     <string name="show_launcher_icon">显示桌面图标</string>
     <string name="show_launcher_icon_summary">隐藏后仍可从 LSPosed 打开</string>
-    <string name="automatic_updates">自动检测更新</string>
-    <string name="automatic_updates_summary">打开设置页时静默检查新版本</string>
     <string name="update_and_about">更新与关于</string>
     <string name="check_for_updates">检查更新</string>
     <string name="check_now">检查</string>
