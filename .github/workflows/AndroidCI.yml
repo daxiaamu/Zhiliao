@@ -3,6 +3,12 @@ name: Android CI
 on:
   push:
     branches: [ master ]
+  workflow_dispatch:
+    inputs:
+      version_name:
+        description: Exact version name for a release build
+        required: true
+        type: string
 
 jobs:
   build:
@@ -19,10 +25,16 @@ jobs:
           distribution: 'zulu'
           java-version: 17
       - name: Retrieve version
+        env:
+          RELEASE_VERSION: ${{ inputs.version_name }}
         run: |
-          COMMIT_HASH=$(echo ${{ github.event.head_commit.id }} | head -c 7)
+          COMMIT_HASH=$(echo ${{ github.sha }} | head -c 7)
           APP_VER_NAME=$(grep '^appVerName=' gradle.properties | cut -d'=' -f2)
-          echo VERSION=${APP_VER_NAME}_${COMMIT_HASH} >> $GITHUB_ENV
+          if [ -n "$RELEASE_VERSION" ]; then
+            echo VERSION=$RELEASE_VERSION >> $GITHUB_ENV
+          else
+            echo VERSION=${APP_VER_NAME}_${COMMIT_HASH} >> $GITHUB_ENV
+          fi
       - name: Write key
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/master'
         run: |
