@@ -92,6 +92,7 @@ class MainActivity : ComponentActivity() {
     private var downloadProgress by mutableIntStateOf(NOT_DOWNLOADING)
     private var pendingInstallApk: File? = null
     private var waitingForInstallPermission = false
+    private val scopeRefresh = Runnable { ModulePreferences.refreshScope() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -120,11 +121,19 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
+        ModulePreferences.refreshScope()
+        window.decorView.removeCallbacks(scopeRefresh)
+        window.decorView.postDelayed(scopeRefresh, SCOPE_RECHECK_DELAY_MS)
         if (waitingForInstallPermission && canInstallPackages()) {
             waitingForInstallPermission = false
             pendingInstallApk?.let(::launchInstaller)
             pendingInstallApk = null
         }
+    }
+
+    override fun onPause() {
+        window.decorView.removeCallbacks(scopeRefresh)
+        super.onPause()
     }
 
     @OptIn(ExperimentalMaterial3Api::class)
@@ -796,6 +805,7 @@ class MainActivity : ComponentActivity() {
     private fun openUrl(url: String) = startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
 
     companion object {
+        private const val SCOPE_RECHECK_DELAY_MS = 750L
         private data class HookOption(
             val key: String,
             val title: Int,

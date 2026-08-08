@@ -19,6 +19,7 @@ object ModulePreferences {
     fun connect(context: Context, listener: (SharedPreferences) -> Unit) {
         listeners += listener
         preferences?.let(listener)
+        service?.let(::syncScope)
         if (registered) return
         registered = true
         XposedServiceHelper.registerListener(object : XposedServiceHelper.OnServiceListener {
@@ -35,6 +36,10 @@ object ModulePreferences {
                 if (service === dead) service = null
             }
         })
+    }
+
+    fun refreshScope() {
+        service?.let(::syncScope)
     }
 
     private fun syncScope(service: XposedService) {
