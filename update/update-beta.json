@@ -1,18 +1,18 @@
 {
   "schemaVersion": 1,
-  "versionCode": 202608082,
-  "versionName": "26.08.08-beta.2",
-  "url": "https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.2/Zhiliao_26.08.08-beta.2.apk",
+  "versionCode": 202608083,
+  "versionName": "26.08.08-beta.3",
+  "url": "https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.3/Zhiliao_26.08.08-beta.3.apk",
   "urls": [
-    "https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.2/Zhiliao_26.08.08-beta.2.apk",
-    "https://ghfast.top/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.2/Zhiliao_26.08.08-beta.2.apk",
-    "https://gh-proxy.com/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.2/Zhiliao_26.08.08-beta.2.apk",
-    "https://ghproxy.net/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.2/Zhiliao_26.08.08-beta.2.apk",
-    "https://gh.llkk.cc/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.2/Zhiliao_26.08.08-beta.2.apk",
-    "https://ghp.keleyaa.com/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.2/Zhiliao_26.08.08-beta.2.apk",
-    "https://gh.monlor.com/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.2/Zhiliao_26.08.08-beta.2.apk"
+    "https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.3/Zhiliao_26.08.08-beta.3.apk",
+    "https://ghfast.top/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.3/Zhiliao_26.08.08-beta.3.apk",
+    "https://gh-proxy.com/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.3/Zhiliao_26.08.08-beta.3.apk",
+    "https://ghproxy.net/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.3/Zhiliao_26.08.08-beta.3.apk",
+    "https://gh.llkk.cc/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.3/Zhiliao_26.08.08-beta.3.apk",
+    "https://ghp.keleyaa.com/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.3/Zhiliao_26.08.08-beta.3.apk",
+    "https://gh.monlor.com/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.3/Zhiliao_26.08.08-beta.3.apk"
   ],
-  "sha256": "6ad388475472bf09fd329008cdb39751feb09599dce6273440b74f82b31cd9d6",
-  "changelog": "适配知乎 11.4.0（40408），修复现代 libxposed release 入口、我的页面工具栏入口、模板广告过滤与更新通道。",
-  "publishedAt": "2026-08-07T22:58:03Z"
+  "sha256": "103ca602243b0badea5fd75fa727f60cccef886208a99a33042ae0d16446bf7b",
+  "changelog": "本次预发布重点：\n\n- 适配知乎国内版 11.4.0（40408）与 Google Play 版 10.95.0（29522），并分别标注已适配渠道和版本。\n- 提升启动广告与标签相关 Hook 的跨渠道、跨版本发现能力，减少对混淆字段名的依赖。\n- 将知了入口从“我的”页工具栏移至知乎“设置”列表顶部，修复颜色不一致及滚动重叠问题。\n- 修复知乎 11.4 信息流广告 Hook 的类型兼容问题。\n- 知了设置页底部新增国内版/Google Play 版具体适配说明。\n- 发布构建新增精确版本号输入，避免更新元数据混入快照提交哈希。\n\n已验证：单元测试、Lint、Release 构建、Android 16 / LSPosed API 102 真机安装、知乎设置入口跳转与滚动回归。\n\nAPK SHA-256：103CA602243B0BADEA5FD75FA727F60CCCEF886208A99A33042AE0D16446BF7B",
+  "publishedAt": "2026-08-08T02:10:00Z"
 }
