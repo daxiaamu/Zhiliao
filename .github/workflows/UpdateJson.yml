@@ -7,10 +7,19 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: publish-update-metadata
+  cancel-in-progress: false
+
 jobs:
   update-json:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: master
+          fetch-depth: 0
+
       - name: Download release APK
         env:
           GH_TOKEN: ${{ github.token }}
@@ -82,24 +91,18 @@ jobs:
           ' update.json
           cat update.json
 
-      - name: Attach update.json to release
+      - name: Commit update metadata to repository
         env:
-          GH_TOKEN: ${{ github.token }}
-          TAG: ${{ github.event.release.tag_name }}
-        run: gh release upload "$TAG" update.json --repo "$GITHUB_REPOSITORY" --clobber
-
-      - name: Publish CDN update branch
-        env:
-          GH_TOKEN: ${{ github.token }}
-          CHANNEL: ${{ github.event.release.prerelease && 'update-beta' || 'update' }}
+          TARGET: ${{ github.event.release.prerelease && 'update/update-beta.json' || 'update/update.json' }}
         run: |
-          mkdir update-publish
-          cp update.json update-publish/update.json
-          cd update-publish
-          git init
+          mkdir -p update
+          cp update.json "$TARGET"
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git checkout --orphan "$CHANNEL"
-          git add update.json
-          git commit -m "Update metadata for $VERSION_NAME"
-          git push --force "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "HEAD:${CHANNEL}"
+          git add "$TARGET"
+          if git diff --cached --quiet; then
+            echo "Metadata is already current"
+            exit 0
+          fi
+          git commit -m "Update metadata for $VERSION_NAME [skip ci]"
+          git push origin HEAD:master

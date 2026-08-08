@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "versionCode": 202608082,
+  "versionName": "26.08.08-beta.2",
+  "url": "https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.2/Zhiliao_26.08.08-beta.2.apk",
+  "urls": [
+    "https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.2/Zhiliao_26.08.08-beta.2.apk",
+    "https://ghfast.top/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.2/Zhiliao_26.08.08-beta.2.apk",
+    "https://gh-proxy.com/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.2/Zhiliao_26.08.08-beta.2.apk",
+    "https://ghproxy.net/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.2/Zhiliao_26.08.08-beta.2.apk",
+    "https://gh.llkk.cc/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.2/Zhiliao_26.08.08-beta.2.apk",
+    "https://ghp.keleyaa.com/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.2/Zhiliao_26.08.08-beta.2.apk",
+    "https://gh.monlor.com/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.2/Zhiliao_26.08.08-beta.2.apk"
+  ],
+  "sha256": "6ad388475472bf09fd329008cdb39751feb09599dce6273440b74f82b31cd9d6",
+  "changelog": "适配知乎 11.4.0（40408），修复现代 libxposed release 入口、我的页面工具栏入口、模板广告过滤与更新通道。",
+  "publishedAt": "2026-08-07T22:58:03Z"
+}

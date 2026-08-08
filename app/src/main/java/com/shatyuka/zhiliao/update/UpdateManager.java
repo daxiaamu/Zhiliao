@@ -27,22 +27,21 @@ import java.util.concurrent.Executors;
 
 public final class UpdateManager {
     public static final String[] UPDATE_JSON_URLS = {
-            "https://cdn.jsdelivr.net/gh/daxiaamu/Zhiliao@update/update.json",
-            "https://fastly.jsdelivr.net/gh/daxiaamu/Zhiliao@update/update.json",
-            "https://gcore.jsdelivr.net/gh/daxiaamu/Zhiliao@update/update.json",
-            "https://testingcf.jsdelivr.net/gh/daxiaamu/Zhiliao@update/update.json",
-            "https://cdn.statically.io/gh/daxiaamu/Zhiliao/update/update.json",
-            "https://raw.githubusercontent.com/daxiaamu/Zhiliao/update/update.json",
-            "https://github.com/daxiaamu/Zhiliao/releases/latest/download/update.json"
+            "https://raw.githubusercontent.com/daxiaamu/Zhiliao/master/update/update.json",
+            "https://cdn.jsdelivr.net/gh/daxiaamu/Zhiliao@master/update/update.json",
+            "https://fastly.jsdelivr.net/gh/daxiaamu/Zhiliao@master/update/update.json",
+            "https://gcore.jsdelivr.net/gh/daxiaamu/Zhiliao@master/update/update.json",
+            "https://testingcf.jsdelivr.net/gh/daxiaamu/Zhiliao@master/update/update.json",
+            "https://cdn.statically.io/gh/daxiaamu/Zhiliao/master/update/update.json"
     };
 
     private static final String[] BETA_UPDATE_JSON_URLS = {
-            "https://cdn.jsdelivr.net/gh/daxiaamu/Zhiliao@update-beta/update.json",
-            "https://fastly.jsdelivr.net/gh/daxiaamu/Zhiliao@update-beta/update.json",
-            "https://gcore.jsdelivr.net/gh/daxiaamu/Zhiliao@update-beta/update.json",
-            "https://testingcf.jsdelivr.net/gh/daxiaamu/Zhiliao@update-beta/update.json",
-            "https://cdn.statically.io/gh/daxiaamu/Zhiliao/update-beta/update.json",
-            "https://raw.githubusercontent.com/daxiaamu/Zhiliao/update-beta/update.json"
+            "https://raw.githubusercontent.com/daxiaamu/Zhiliao/master/update/update-beta.json",
+            "https://cdn.jsdelivr.net/gh/daxiaamu/Zhiliao@master/update/update-beta.json",
+            "https://fastly.jsdelivr.net/gh/daxiaamu/Zhiliao@master/update/update-beta.json",
+            "https://gcore.jsdelivr.net/gh/daxiaamu/Zhiliao@master/update/update-beta.json",
+            "https://testingcf.jsdelivr.net/gh/daxiaamu/Zhiliao@master/update/update-beta.json",
+            "https://cdn.statically.io/gh/daxiaamu/Zhiliao/master/update/update-beta.json"
     };
 
     private static final String[] RELEASE_PROXY_PREFIXES = {
