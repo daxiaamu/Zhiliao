@@ -1,18 +1,18 @@
 {
   "schemaVersion": 1,
-  "versionCode": 202608085,
-  "versionName": "26.08.08-beta.5",
-  "url": "https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.5/Zhiliao_26.08.08-beta.5.apk",
+  "versionCode": 202608086,
+  "versionName": "26.08.08-beta.6",
+  "url": "https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.6/Zhiliao_26.08.08-beta.6.apk",
   "urls": [
-    "https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.5/Zhiliao_26.08.08-beta.5.apk",
-    "https://ghfast.top/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.5/Zhiliao_26.08.08-beta.5.apk",
-    "https://gh-proxy.com/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.5/Zhiliao_26.08.08-beta.5.apk",
-    "https://ghproxy.net/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.5/Zhiliao_26.08.08-beta.5.apk",
-    "https://gh.llkk.cc/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.5/Zhiliao_26.08.08-beta.5.apk",
-    "https://ghp.keleyaa.com/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.5/Zhiliao_26.08.08-beta.5.apk",
-    "https://gh.monlor.com/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.5/Zhiliao_26.08.08-beta.5.apk"
+    "https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.6/Zhiliao_26.08.08-beta.6.apk",
+    "https://ghfast.top/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.6/Zhiliao_26.08.08-beta.6.apk",
+    "https://gh-proxy.com/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.6/Zhiliao_26.08.08-beta.6.apk",
+    "https://ghproxy.net/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.6/Zhiliao_26.08.08-beta.6.apk",
+    "https://gh.llkk.cc/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.6/Zhiliao_26.08.08-beta.6.apk",
+    "https://ghp.keleyaa.com/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.6/Zhiliao_26.08.08-beta.6.apk",
+    "https://gh.monlor.com/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.6/Zhiliao_26.08.08-beta.6.apk"
   ],
-  "sha256": "a529eb5eae0850497d00484162a1891c16062081dd92dc397974afd91824369b",
-  "changelog": "## 主要变化\n\n- 适配知乎国内版 11.4.0（40408）和 Google Play 版 10.95.0（29522）。\n- 引入统一兼容配置、结构特征匹配和 DexKit 回退，提高未知版本适配能力。\n- 已适配版本清单改由内置兼容配置驱动，并为安全的云配置下发预留校验与回退机制。\n- 远程适配配置加载后会提示重启知乎，且每个 revision 只提示一次。\n- 优化 Hook 失败降级和日志，避免单项失效影响其他功能。\n- 更新入口文案调整为“点击检查知了模块版本更新”。\n- CI 增加兼容配置测试，并建立永久发布签名保护。\n\n## 安装说明\n\n本版开始启用新的永久发布证书。由于此前测试版使用临时 Debug 证书，从 beta.4 或更早版本升级时需要先卸载旧版知了，再安装 beta.5。beta.5 之后的版本可正常覆盖更新。\n\nAPK SHA-256：`a529eb5eae0850497d00484162a1891c16062081dd92dc397974afd91824369b`\n",
-  "publishedAt": "2026-08-08T04:28:34Z"
+  "sha256": "bbf7340a697d579971c2f62e82bced5cb0bfce0dae94ffe21fe2efa8ee30b833",
+  "changelog": "## 主要变化\n\n- 改用维护者提供的正式发布证书；私钥和密码仅在本机使用，未上传到 GitHub。\n- GitHub Actions 改为只生成 Debug 签名的 CI 快照，禁止作为正式 Release 资产。\n- 新增云配置回归测试：远程配置加入新的 Google Play 适配版本后，“关于 → 已适配版本”会同步更新。\n- 延续 beta.5 的国内版 11.4.0、Google Play 版 10.95.0 适配，以及配置化兼容、DexKit 回退和安全降级能力。\n\n## 安装说明\n\n本版开始使用正式发布证书。beta.5 及更早测试版使用的是其他测试证书，因此升级 beta.6 时需要先卸载旧版知了。beta.6 之后将使用此正式证书，可正常覆盖更新。\n\nAPK SHA-256：`bbf7340a697d579971c2f62e82bced5cb0bfce0dae94ffe21fe2efa8ee30b833`\n\n签名证书 SHA-256：`a3278d7a7a11754fe8d8042a0e2666caef60505dbd97db7a1127b88bb622c7f9`\n",
+  "publishedAt": "2026-08-08T05:15:38Z"
 }
