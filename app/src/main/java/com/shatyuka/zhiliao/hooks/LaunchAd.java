@@ -4,6 +4,7 @@ import com.shatyuka.zhiliao.DexResolver;
 import com.shatyuka.zhiliao.Helper;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Field;
 import android.view.View;
 
 import com.shatyuka.zhiliao.xposed.XC_MethodHook;
@@ -26,7 +27,7 @@ public class LaunchAd implements IHook {
     @Override
     public void init(final ClassLoader classLoader) throws Throwable {
         AdNetworkManager = Helper.findClass(classLoader, "com.zhihu.android.sdk.launchad.", 0, 28,
-                (Class<?> clazz) -> clazz.getDeclaredField("c").getType().getName().startsWith("okhttp3."));
+                LaunchAd::isAdNetworkManager);
         if (AdNetworkManager == null) {
             throw new ClassNotFoundException("com.zhihu.android.sdk.launchad.AdNetworkManager");
         }
@@ -93,5 +94,19 @@ public class LaunchAd implements IHook {
                 }
             });
         }
+    }
+
+    private static boolean isAdNetworkManager(Class<?> clazz) {
+        boolean hasOkHttp = false;
+        for (Field field : clazz.getDeclaredFields()) {
+            if (field.getType().getName().startsWith("okhttp3.")) {
+                hasOkHttp = true;
+                break;
+            }
+        }
+        if (!hasOkHttp)
+            return false;
+        return Helper.getMethodByParameterTypes(clazz,
+                int.class, long.class, long.class, String.class) != null;
     }
 }

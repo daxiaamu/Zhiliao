@@ -17,7 +17,6 @@ import com.shatyuka.zhiliao.hooks.IHook;
 import com.shatyuka.zhiliao.hooks.LaunchAd;
 import com.shatyuka.zhiliao.hooks.LiveButton;
 import com.shatyuka.zhiliao.hooks.MineHybridView;
-import com.shatyuka.zhiliao.hooks.MineToolbarEntry;
 import com.shatyuka.zhiliao.hooks.NavButton;
 import com.shatyuka.zhiliao.hooks.NavRes;
 import com.shatyuka.zhiliao.hooks.NextAnswer;
@@ -29,6 +28,7 @@ import com.shatyuka.zhiliao.hooks.Tag;
 import com.shatyuka.zhiliao.hooks.TemplateAdView;
 import com.shatyuka.zhiliao.hooks.ThirdPartyLogin;
 import com.shatyuka.zhiliao.hooks.VIPBanner;
+import com.shatyuka.zhiliao.hooks.ZhihuSettingsEntry;
 
 import org.junit.Test;
 
@@ -119,13 +119,13 @@ public class HookTest {
     }
 
     @Test
-    public void mineToolbarEntryTest() {
-        checkHook(new MineToolbarEntry(), 40408);
+    public void templateAdViewTest() {
+        checkHook(new TemplateAdView(), 29522);
     }
 
     @Test
-    public void templateAdViewTest() {
-        checkHook(new TemplateAdView(), 40408);
+    public void zhihuSettingsEntryTest() {
+        checkHook(new ZhihuSettingsEntry(), 29522);
     }
 
     @Test

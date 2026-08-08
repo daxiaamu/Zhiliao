@@ -70,7 +70,12 @@ public class Tag implements IHook {
         try {
             onBindData = BaseTemplateNewFeedHolder.getMethod("onBindData", Object.class);
         } catch (NoSuchMethodException e) {
-            onBindData = BaseTemplateNewFeedHolder.getDeclaredMethod("a", TemplateFeed);
+            try {
+                onBindData = BaseTemplateNewFeedHolder.getDeclaredMethod("onBindData", Object.class);
+            } catch (NoSuchMethodException ignored) {
+                onBindData = BaseTemplateNewFeedHolder.getDeclaredMethod("a", TemplateFeed);
+            }
+            onBindData.setAccessible(true);
         }
 
         Class<?> SDUICard = null;

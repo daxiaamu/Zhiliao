@@ -15,6 +15,9 @@
     <string name="update_security_summary">多源下载，安装前校验 SHA-256</string>
     <string name="github_homepage">GitHub 项目主页</string>
     <string name="open_source_summary">查看源码、问题反馈与发行版本</string>
+    <string name="compatibility_title">已适配的知乎版本</string>
+    <string name="compatibility_domestic">国内版：11.4.0（40408）</string>
+    <string name="compatibility_play">Google Play 版：10.95.0（29522）</string>
     <string name="open_link">打开链接</string>
     <string name="update_skipped">已跳过 %1$s</string>
     <string name="update_found">发现 %1$s</string>
@@ -34,7 +37,6 @@
     <string name="launcher_shown">桌面图标已显示</string>
     <string name="launcher_hidden">桌面图标已隐藏，可从 LSPosed 打开</string>
     <string name="unknown">未知</string>
-    <string name="zhihu_toolbar_entry">知了设置</string>
     <string name="enable_module">启用知了</string>
     <string name="enable_module_summary">总开关；修改后重启知乎生效</string>
     <string name="remove_launch_ads">移除启动广告</string>

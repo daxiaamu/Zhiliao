@@ -191,6 +191,7 @@ class MainActivity : ComponentActivity() {
                     item { SectionTitle(stringResource(R.string.update_and_about)) }
                     item { UpdateCard() }
                     item { AboutCard() }
+                    item { CompatibilityFooter() }
                     item { Spacer(Modifier.height(12.dp)) }
                 }
             }
@@ -391,6 +392,32 @@ class MainActivity : ComponentActivity() {
                     Icon(Icons.AutoMirrored.Outlined.OpenInNew, contentDescription = stringResource(R.string.open_link))
                 }
             }
+        }
+    }
+
+    @Composable
+    private fun CompatibilityFooter() {
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(2.dp),
+        ) {
+            Text(
+                stringResource(R.string.compatibility_title),
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Text(
+                stringResource(R.string.compatibility_domestic),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Text(
+                stringResource(R.string.compatibility_play),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
     }
 
