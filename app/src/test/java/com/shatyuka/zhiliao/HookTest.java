@@ -33,6 +33,8 @@ import com.shatyuka.zhiliao.hooks.ZhihuSettingsEntry;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
@@ -57,6 +59,23 @@ public class HookTest {
         String name;
         int versionCode;
         ClassLoader classLoader;
+    }
+
+    interface TestAutoRefreshCallback {}
+
+    abstract static class TestAutoRefreshReason {}
+
+    static class TestAutoRefreshManager {
+        @SuppressWarnings("unused")
+        private void automaticGate(long elapsed, int threshold,
+                                   TestAutoRefreshCallback callback,
+                                   TestAutoRefreshReason reason) {}
+
+        @SuppressWarnings("unused")
+        private void manualRefresh(boolean force) {}
+
+        @SuppressWarnings("unused")
+        private void loadMore(String nextUrl) {}
     }
 
     static LinkedList<PackageInfo> packageInfos = new LinkedList<>();
@@ -293,6 +312,24 @@ public class HookTest {
     }
 
     @Test
+    public void autoRefreshResolverTargetsOnlyAutomaticGate() throws Throwable {
+        resetState(AutoRefresh.class);
+        AutoRefresh hook = new AutoRefresh();
+        Method resolver = AutoRefresh.class.getDeclaredMethod("findTryRefreshMethod", Class.class);
+        resolver.setAccessible(true);
+        assertTrue((boolean) resolver.invoke(hook, TestAutoRefreshManager.class));
+
+        Field targetField = AutoRefresh.class.getDeclaredField("tryRefresh");
+        targetField.setAccessible(true);
+        Method target = (Method) targetField.get(null);
+        assertNotNull(target);
+        assertEquals("automaticGate", target.getName());
+        assertEquals(4, target.getParameterCount());
+        assertEquals(long.class, target.getParameterTypes()[0]);
+        assertEquals(int.class, target.getParameterTypes()[1]);
+    }
+
+    @Test
     public void autoRefresh114TargetsOnlyAutomaticGate() throws Throwable {
         PackageInfo domestic114 = null;
         for (PackageInfo packageInfo : packageInfos) {
@@ -301,7 +338,7 @@ public class HookTest {
                 break;
             }
         }
-        assertNotNull("Zhihu 11.4.0 compatibility fixture is missing", domestic114);
+        assumeTrue("Zhihu 11.4.0 compatibility fixture is not available", domestic114 != null);
 
         resetState(AutoRefresh.class);
         Helper.packageInfo = new android.content.pm.PackageInfo();
