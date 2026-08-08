@@ -1,18 +1,18 @@
 {
   "schemaVersion": 1,
-  "versionCode": 2026080901,
-  "versionName": "26.08.09-beta.1",
-  "url": "https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.09-beta.1/Zhiliao_26.08.09-beta.1.apk",
+  "versionCode": 2026080902,
+  "versionName": "26.08.09-beta.2",
+  "url": "https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.09-beta.2/Zhiliao_26.08.09-beta.2.apk",
   "urls": [
-    "https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.09-beta.1/Zhiliao_26.08.09-beta.1.apk",
-    "https://ghfast.top/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.09-beta.1/Zhiliao_26.08.09-beta.1.apk",
-    "https://gh-proxy.com/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.09-beta.1/Zhiliao_26.08.09-beta.1.apk",
-    "https://ghproxy.net/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.09-beta.1/Zhiliao_26.08.09-beta.1.apk",
-    "https://gh.llkk.cc/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.09-beta.1/Zhiliao_26.08.09-beta.1.apk",
-    "https://ghp.keleyaa.com/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.09-beta.1/Zhiliao_26.08.09-beta.1.apk",
-    "https://gh.monlor.com/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.09-beta.1/Zhiliao_26.08.09-beta.1.apk"
+    "https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.09-beta.2/Zhiliao_26.08.09-beta.2.apk",
+    "https://ghfast.top/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.09-beta.2/Zhiliao_26.08.09-beta.2.apk",
+    "https://gh-proxy.com/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.09-beta.2/Zhiliao_26.08.09-beta.2.apk",
+    "https://ghproxy.net/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.09-beta.2/Zhiliao_26.08.09-beta.2.apk",
+    "https://gh.llkk.cc/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.09-beta.2/Zhiliao_26.08.09-beta.2.apk",
+    "https://ghp.keleyaa.com/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.09-beta.2/Zhiliao_26.08.09-beta.2.apk",
+    "https://gh.monlor.com/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.09-beta.2/Zhiliao_26.08.09-beta.2.apk"
   ],
-  "sha256": "089db1b9a4e62422256e87737115ccd09c07c985811031b8ad8869c7563efb8d",
-  "changelog": "本预发布版新增“关闭搜索栏左侧营销位”，并修复启动时“领现金”短暂闪现。\n\n- 直接短路知乎首页营销位业务方法，避免先显示再隐藏\n- 国内版知乎 11.4.0（versionCode 40408）已通过兼容配置适配\n- 未知版本可由 DexKit 根据稳定调用特征自动解析并按版本缓存\n- 云兼容配置修订至 2026080901，保留结构化兜底\n- 真机冷启动逐帧检查 108 帧，未发现营销位闪现\n- targetSdk/compileSdk 37，LSPosed API 102\n\nAPK SHA-256：`089db1b9a4e62422256e87737115ccd09c07c985811031b8ad8869c7563efb8d`\n",
-  "publishedAt": "2026-08-08T18:58:33Z"
+  "sha256": "b717e787ea8a831df6a6f8a0c1ae039a3b3fb32c37e1fe3062b1c1d3e2fe22d9",
+  "changelog": "本预发布版修复「禁止自动刷新」误伤手动刷新和信息流分页的问题。\r\n\r\n- 仅拦截知乎自动刷新管理器的前后台/超时刷新门\r\n- 恢复首页手动下拉刷新\r\n- 恢复连续滚动时的信息流分页加载\r\n- 未识别到明确自动刷新门时安全跳过，不再拦截数据源\r\n- 更新设置说明，明确保留下拉刷新和继续加载\r\n- 国内版知乎 11.4.0 真机完成下拉刷新、27 次快速滚动及前后台恢复测试\r\n- targetSdk/compileSdk 37，LSPosed API 102\r\n\r\nAPK SHA-256: b717e787ea8a831df6a6f8a0c1ae039a3b3fb32c37e1fe3062b1c1d3e2fe22d9",
+  "publishedAt": "2026-08-08T22:15:49Z"
 }
