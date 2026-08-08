@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "revision": 2026080803,
-  "sha256": "0f55dfdba3903431641a24860e2a752d23e623556f8189a80211ca88c9092760",
+  "revision": 2026080901,
+  "sha256": "c57568c1585a6ba890544f8c2d3abeedffa774a3186bd52b05e58b12775a4005",
   "urls": [
     "https://raw.githubusercontent.com/daxiaamu/Zhiliao/master/update/compatibility-v1.json",
     "https://cdn.jsdelivr.net/gh/daxiaamu/Zhiliao@master/update/compatibility-v1.json",
