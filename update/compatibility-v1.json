@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "revision": 2026080802,
+  "revision": 2026080803,
   "targetPackage": "com.zhihu.android",
-  "compatibilityUrl": "https://pan.quark.cn/s/1bebc29ea350",
+  "compatibilityUrl": "https://pan.quark.cn/s/4f43a6eab295",
   "defaults": {
     "symbols": {
       "searchResponseConverters": [

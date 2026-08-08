@@ -35,7 +35,7 @@ public class CompatibilityRegistryTest {
         initialize(40408);
         assertEquals(2, CompatibilityRegistry.getAdaptedVersions().size());
         assertEquals("国内版", CompatibilityRegistry.getAdaptedVersions().get(0).displayName);
-        assertEquals("https://pan.quark.cn/s/1bebc29ea350",
+        assertEquals("https://pan.quark.cn/s/4f43a6eab295",
                 CompatibilityRegistry.getCompatibilityUrl());
     }
 
