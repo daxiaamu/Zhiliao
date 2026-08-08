@@ -23,6 +23,8 @@
     <string name="update_security_summary">点击检查知了模块版本更新</string>
     <string name="github_homepage">GitHub 项目主页</string>
     <string name="open_source_summary">查看源码、问题反馈与发行版本</string>
+    <string name="original_author">原作者：Shatyuka</string>
+    <string name="donate_original_author_summary">点击给原作者捐赠</string>
     <string name="compatibility_title">已适配的知乎版本</string>
     <string name="view_compatible_versions">查看已适配版本</string>
     <string name="open_compatible_versions">前往下载页面</string>

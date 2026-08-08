@@ -584,6 +584,25 @@ class MainActivity : ComponentActivity() {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .clickable { openUrl(ORIGINAL_AUTHOR_DONATE_URL) }
+                    .padding(18.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Icon(painterResource(R.drawable.ic_monetization), contentDescription = null, modifier = Modifier.size(24.dp))
+                Column(Modifier.weight(1f).padding(horizontal = 14.dp)) {
+                    Text(stringResource(R.string.original_author), fontWeight = FontWeight.Medium)
+                    Text(stringResource(R.string.donate_original_author_summary), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                Icon(
+                    Icons.AutoMirrored.Outlined.OpenInNew,
+                    contentDescription = stringResource(R.string.open_link),
+                    modifier = Modifier.size(24.dp),
+                )
+            }
+            HorizontalDivider()
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
                     .clickable { showCompatibilityDialog = true }
                     .padding(18.dp),
                 verticalAlignment = Alignment.CenterVertically,
@@ -835,6 +854,7 @@ class MainActivity : ComponentActivity() {
         private const val STATE_PENDING_APK = "pending_apk"
         private const val NOT_DOWNLOADING = -2
         private const val GITHUB_URL = "https://github.com/daxiaamu/Zhiliao"
+        private const val ORIGINAL_AUTHOR_DONATE_URL = "https://github.com/shatyuka/Zhiliao/wiki/Donate"
 
         private val AD_OPTIONS = listOf(
             HookOption("switch_launchad", R.string.remove_launch_ads, R.string.remove_launch_ads_summary, true),

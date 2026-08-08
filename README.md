@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/icon.svg" width="128" height="128" alt="知了项目图标">
+</p>
+
 # 知了
 
 少一点打扰，多一点内容。
@@ -5,9 +9,22 @@
 知了是面向知乎 Android 客户端的 LSPosed/Xposed 模块，用于移除广告、精简界面并改善部分交互体验。项目同时维护国内版与 Google Play 版适配，并通过远程兼容配置和 DexKit 回退提高对未知版本的适应能力。
 
 [![Android CI](https://github.com/daxiaamu/Zhiliao/actions/workflows/AndroidCI.yml/badge.svg)](https://github.com/daxiaamu/Zhiliao/actions/workflows/AndroidCI.yml)
+[![Zhihu version sentinel](https://github.com/daxiaamu/Zhiliao/actions/workflows/ZhihuCompatibility.yml/badge.svg)](https://github.com/daxiaamu/Zhiliao/actions/workflows/ZhihuCompatibility.yml)
+[![Compatibility config](https://github.com/daxiaamu/Zhiliao/actions/workflows/CompatibilityConfig.yml/badge.svg)](https://github.com/daxiaamu/Zhiliao/actions/workflows/CompatibilityConfig.yml)
+[![Update metadata](https://github.com/daxiaamu/Zhiliao/actions/workflows/UpdateJson.yml/badge.svg)](https://github.com/daxiaamu/Zhiliao/actions/workflows/UpdateJson.yml)
 [![Release](https://img.shields.io/github/v/release/daxiaamu/Zhiliao?include_prereleases&label=Release)](https://github.com/daxiaamu/Zhiliao/releases)
 [![Downloads](https://img.shields.io/github/downloads/daxiaamu/Zhiliao/total?label=Downloads)](https://github.com/daxiaamu/Zhiliao/releases)
 [![License](https://img.shields.io/github/license/daxiaamu/Zhiliao?label=License)](LICENSE.md)
+[![Stars](https://img.shields.io/github/stars/daxiaamu/Zhiliao?style=flat&label=Stars)](https://github.com/daxiaamu/Zhiliao/stargazers)
+[![Forks](https://img.shields.io/github/forks/daxiaamu/Zhiliao?style=flat&label=Forks)](https://github.com/daxiaamu/Zhiliao/forks)
+[![Issues](https://img.shields.io/github/issues/daxiaamu/Zhiliao?label=Issues)](https://github.com/daxiaamu/Zhiliao/issues)
+[![Pull requests](https://img.shields.io/github/issues-pr/daxiaamu/Zhiliao?label=Pull%20requests)](https://github.com/daxiaamu/Zhiliao/pulls)
+[![Last commit](https://img.shields.io/github/last-commit/daxiaamu/Zhiliao?label=Last%20commit)](https://github.com/daxiaamu/Zhiliao/commits/master)
+[![Repo size](https://img.shields.io/github/repo-size/daxiaamu/Zhiliao?label=Repo%20size)](https://github.com/daxiaamu/Zhiliao)
+[![Android](https://img.shields.io/badge/Android-8.0%2B-3DDC84?logo=android&logoColor=white)](#运行要求)
+[![Target API](https://img.shields.io/badge/targetSdk-37-3DDC84?logo=android&logoColor=white)](#运行要求)
+[![LSPosed API](https://img.shields.io/badge/LSPosed%20API-102-4A90E2)](#运行要求)
+[![Java](https://img.shields.io/badge/Java-17-ED8B00?logo=openjdk&logoColor=white)](#本地构建)
 
 > 本项目仅用于学习、研究和改善个人使用体验，与知乎无关。请遵守所在地法律法规及知乎服务协议。
 
@@ -162,6 +179,12 @@ Windows 使用：
 - [下载发行版本](https://github.com/daxiaamu/Zhiliao/releases)
 
 提交代码前请至少运行 `testDebugUnitTest` 和 `assembleDebug`，并说明测试使用的知乎渠道和版本。
+
+## 致谢与捐赠
+
+本项目延续自 [Shatyuka/Zhiliao](https://github.com/shatyuka/Zhiliao)。感谢原作者 Shatyuka 和所有贡献者留下的工作。
+
+当前维护只是维护者一时的头脑发热，原作者长期以来的贡献才是真正的“为人民服务”。恳请大家在能力范围内给原作者捐赠：[前往 Shatyuka 的捐赠页](https://github.com/shatyuka/Zhiliao/wiki/Donate)。
 
 ## License
 
