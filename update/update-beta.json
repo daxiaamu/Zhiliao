@@ -1,18 +1,18 @@
 {
   "schemaVersion": 1,
-  "versionCode": 202608086,
-  "versionName": "26.08.08-beta.6",
-  "url": "https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.6/Zhiliao_26.08.08-beta.6.apk",
+  "versionCode": 202608087,
+  "versionName": "26.08.08-beta.7",
+  "url": "https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.7/Zhiliao_26.08.08-beta.7.apk",
   "urls": [
-    "https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.6/Zhiliao_26.08.08-beta.6.apk",
-    "https://ghfast.top/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.6/Zhiliao_26.08.08-beta.6.apk",
-    "https://gh-proxy.com/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.6/Zhiliao_26.08.08-beta.6.apk",
-    "https://ghproxy.net/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.6/Zhiliao_26.08.08-beta.6.apk",
-    "https://gh.llkk.cc/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.6/Zhiliao_26.08.08-beta.6.apk",
-    "https://ghp.keleyaa.com/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.6/Zhiliao_26.08.08-beta.6.apk",
-    "https://gh.monlor.com/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.6/Zhiliao_26.08.08-beta.6.apk"
+    "https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.7/Zhiliao_26.08.08-beta.7.apk",
+    "https://ghfast.top/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.7/Zhiliao_26.08.08-beta.7.apk",
+    "https://gh-proxy.com/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.7/Zhiliao_26.08.08-beta.7.apk",
+    "https://ghproxy.net/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.7/Zhiliao_26.08.08-beta.7.apk",
+    "https://gh.llkk.cc/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.7/Zhiliao_26.08.08-beta.7.apk",
+    "https://ghp.keleyaa.com/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.7/Zhiliao_26.08.08-beta.7.apk",
+    "https://gh.monlor.com/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.08-beta.7/Zhiliao_26.08.08-beta.7.apk"
   ],
-  "sha256": "bbf7340a697d579971c2f62e82bced5cb0bfce0dae94ffe21fe2efa8ee30b833",
-  "changelog": "## 主要变化\n\n- 改用维护者提供的正式发布证书；私钥和密码仅在本机使用，未上传到 GitHub。\n- GitHub Actions 改为只生成 Debug 签名的 CI 快照，禁止作为正式 Release 资产。\n- 新增云配置回归测试：远程配置加入新的 Google Play 适配版本后，“关于 → 已适配版本”会同步更新。\n- 延续 beta.5 的国内版 11.4.0、Google Play 版 10.95.0 适配，以及配置化兼容、DexKit 回退和安全降级能力。\n\n## 安装说明\n\n本版开始使用正式发布证书。beta.5 及更早测试版使用的是其他测试证书，因此升级 beta.6 时需要先卸载旧版知了。beta.6 之后将使用此正式证书，可正常覆盖更新。\n\nAPK SHA-256：`bbf7340a697d579971c2f62e82bced5cb0bfce0dae94ffe21fe2efa8ee30b833`\n\n签名证书 SHA-256：`a3278d7a7a11754fe8d8042a0e2666caef60505dbd97db7a1127b88bb622c7f9`\n",
-  "publishedAt": "2026-08-08T05:15:38Z"
+  "sha256": "f090ca65928c5cad2d8a3235bdfb49873d24a8c5e64cd165efe009fc809fff26",
+  "changelog": "## 本版更新\n\n- 修复知乎设置页中的“知了设置”入口固定不滚动的问题，使其随设置列表一起滚动。\n- 移除已失效的“隐藏下一个回答”设置与 Hook；保留“左右滑动切换回答”。\n- “查看已适配版本”弹层区分国内版与 Google Play 版，并接入永久下载目录。\n- 新增兼容性云配置自动检查：清单与配置均提供 6 个 CDN，下载后执行 SHA-256 与 schema 校验，加载成功后提示重启知乎。\n- GitHub 项目主页与适配版本入口图标重新对齐；适配入口使用知了图标。\n- GitHub Actions 自动校验兼容配置并生成 CDN 清单。\n- 禁止应用数据备份，正式签名显式启用 v1/v2/v3。\n\n## 已适配知乎版本\n\n- 国内版：11.4.0（40408，arm64-v8a）\n- Google Play 版：10.95.0（29522，arm64-v8a）\n\n适配版知乎下载目录：https://pan.quark.cn/s/1bebc29ea350\n\n## 验证\n\n- `testDebugUnitTest` 全部通过。\n- R8 release 构建与 lintVital 通过。\n- 正式证书 SHA-256：`A3278D7A7A11754FE8D8042A0E2666CAEF60505DBD97DB7A1127B88BB622C7F9`\n- APK SHA-256：`F090CA65928C5CAD2D8A3235BDFB49873D24A8C5E64CD165EFE009FC809FFF26`\n- APK v1/v2/v3 签名验证通过，并已在 Android 16 真机安装启动。\n",
+  "publishedAt": "2026-08-08T06:11:00Z"
 }
