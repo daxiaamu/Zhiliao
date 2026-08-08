@@ -844,6 +844,7 @@ class MainActivity : ComponentActivity() {
             HookOption("switch_sharead", R.string.remove_share_ads, R.string.remove_share_ads_summary, true),
             HookOption("switch_answerad", R.string.remove_answer_ads, R.string.remove_answer_ads_summary, true),
             HookOption("switch_searchad", R.string.remove_search_ads, R.string.remove_search_ads_summary, true),
+            HookOption("switch_cashentry", R.string.hide_cash_entry, R.string.hide_cash_entry_summary, true),
         )
 
         private val CONTENT_OPTIONS = listOf(

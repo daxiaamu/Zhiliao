@@ -62,6 +62,8 @@
     <string name="remove_answer_ads_summary">过滤回答末尾推荐广告</string>
     <string name="remove_search_ads">移除搜索广告</string>
     <string name="remove_search_ads_summary">过滤搜索结果推广内容</string>
+    <string name="hide_cash_entry">关闭搜索栏左侧营销位</string>
+    <string name="hide_cash_entry_summary">移除首页搜索栏左侧的活动营销入口</string>
     <string name="filter_video">过滤视频</string>
     <string name="filter_video_summary">从推荐流中移除视频卡片</string>
     <string name="filter_article">过滤文章</string>

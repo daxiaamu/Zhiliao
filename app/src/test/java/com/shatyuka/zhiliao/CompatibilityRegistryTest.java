@@ -24,6 +24,13 @@ public class CompatibilityRegistryTest {
     }
 
     @Test
+    public void domesticProfileProvidesCashEntryMethod() throws Exception {
+        initialize(40408);
+        assertEquals("Ok",
+                CompatibilityRegistry.getSymbolCandidates("cashEntryMethods").get(0));
+    }
+
+    @Test
     public void unknownVersionUsesFeatureFallback() throws Exception {
         initialize(999999);
         assertEquals("feature-fallback", CompatibilityRegistry.getActiveProfileId());

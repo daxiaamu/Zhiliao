@@ -9,6 +9,7 @@ import com.shatyuka.zhiliao.hooks.AnswerAd;
 import com.shatyuka.zhiliao.hooks.AnswerListAd;
 import com.shatyuka.zhiliao.hooks.Article;
 import com.shatyuka.zhiliao.hooks.AutoRefresh;
+import com.shatyuka.zhiliao.hooks.CashEntry;
 import com.shatyuka.zhiliao.hooks.Cleaner;
 import com.shatyuka.zhiliao.hooks.ColorMode;
 import com.shatyuka.zhiliao.hooks.CommentAd;
@@ -60,6 +61,7 @@ public class Hooks {
             new Article(),
             new Tag(),
             new SearchAd(),
+            new CashEntry(),
             new StatusBar(),
             new ThirdPartyLogin(),
             new NavRes(),

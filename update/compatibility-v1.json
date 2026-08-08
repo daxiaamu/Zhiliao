@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "revision": 2026080803,
+  "revision": 2026080901,
   "targetPackage": "com.zhihu.android",
   "compatibilityUrl": "https://pan.quark.cn/s/4f43a6eab295",
   "defaults": {
@@ -26,7 +26,11 @@
       "minVersionCode": 40408,
       "maxVersionCode": 40408,
       "status": "adapted",
-      "symbols": {}
+      "symbols": {
+        "cashEntryMethods": [
+          "Ok"
+        ]
+      }
     },
     {
       "id": "play-10.95.0-29522",

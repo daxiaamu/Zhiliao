@@ -4,6 +4,7 @@ import com.shatyuka.zhiliao.hooks.AnswerAd;
 import com.shatyuka.zhiliao.hooks.AnswerListAd;
 import com.shatyuka.zhiliao.hooks.Article;
 import com.shatyuka.zhiliao.hooks.AutoRefresh;
+import com.shatyuka.zhiliao.hooks.CashEntry;
 import com.shatyuka.zhiliao.hooks.CustomFilter;
 import com.shatyuka.zhiliao.hooks.ExternLink;
 import com.shatyuka.zhiliao.hooks.FeedAd;
@@ -267,6 +268,11 @@ public class HookTest {
     @Test
     public void searchAdTest() {
         checkHook(new SearchAd());
+    }
+
+    @Test
+    public void cashEntryTest() {
+        checkHook(new CashEntry(), 40408);
     }
 
     @Test

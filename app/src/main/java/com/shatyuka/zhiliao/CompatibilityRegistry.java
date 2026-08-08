@@ -12,6 +12,7 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -35,8 +36,9 @@ public final class CompatibilityRegistry {
     private static final int SCHEMA_VERSION = 1;
     private static final int MAX_CONFIG_BYTES = 256 * 1024;
     private static final Pattern SYMBOL = Pattern.compile("[A-Za-z_$][A-Za-z0-9_.$]*");
-    private static final Set<String> SUPPORTED_SYMBOL_KEYS = Collections.singleton(
-            "searchResponseConverters");
+    private static final Set<String> SUPPORTED_SYMBOL_KEYS = Collections.unmodifiableSet(
+            new LinkedHashSet<>(Arrays.asList(
+                    "searchResponseConverters", "cashEntryMethods")));
 
     private static Catalog catalog = Catalog.empty();
     private static Profile activeProfile;

@@ -180,6 +180,63 @@ public final class DexResolver {
         return methods;
     }
 
+    /** Resolves a renamed method by stable calls in its implementation and caches it per host version. */
+    public static synchronized Method findMethodByInvokes(String key, String searchPackage,
+                                                           String ownerClassName, int paramCount,
+                                                           String... invokedDescriptors) {
+        Method cached = loadCachedLooseMethod(key, ownerClassName, paramCount);
+        if (cached != null)
+            return cached;
+        if (bridge == null || classLoader == null)
+            return null;
+        try {
+            MethodMatcher matcher = MethodMatcher.create()
+                    .declaredClass(ownerClassName)
+                    .returnType("void")
+                    .paramCount(paramCount);
+            for (String descriptor : invokedDescriptors)
+                matcher.addInvoke(descriptor);
+            List<MethodData> result = bridge.findMethod(FindMethod.create()
+                    .searchPackages(searchPackage)
+                    .matcher(matcher));
+            for (MethodData data : result) {
+                try {
+                    Method candidate = data.getMethodInstance(classLoader);
+                    if (ownerClassName.equals(candidate.getDeclaringClass().getName())
+                            && candidate.getReturnType() == void.class
+                            && candidate.getParameterCount() == paramCount) {
+                        save(key, ownerClassName + "#" + candidate.getName());
+                        return candidate;
+                    }
+                } catch (Throwable ignored) {
+                }
+            }
+        } catch (Throwable throwable) {
+            XposedBridge.log("[Zhiliao] DexKit invoke query " + key + " failed: " + throwable);
+        }
+        return null;
+    }
+
+    private static Method loadCachedLooseMethod(String key, String ownerClassName,
+                                                 int paramCount) {
+        String value = load(key);
+        if (value == null || classLoader == null)
+            return null;
+        int separator = value.lastIndexOf('#');
+        if (separator <= 0 || !ownerClassName.equals(value.substring(0, separator)))
+            return null;
+        String methodName = value.substring(separator + 1);
+        try {
+            Class<?> owner = classLoader.loadClass(ownerClassName);
+            for (Method method : owner.getDeclaredMethods()) {
+                if (methodName.equals(method.getName()) && method.getReturnType() == void.class
+                        && method.getParameterCount() == paramCount)
+                    return method;
+            }
+        } catch (Throwable ignored) {
+        }
+        return null;
+    }
     private static List<Method> loadCachedMethods(String key, String methodName,
                                                    Class<?> returnType,
                                                    Class<?>[] parameterTypes) {
