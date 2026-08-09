@@ -97,7 +97,7 @@
     <string name="unlock_third_party_login">解锁第三方登录</string>
     <string name="unlock_third_party_login_summary">显示知乎隐藏的第三方登录方式</string>
     <string name="prevent_auto_refresh">禁止自动刷新</string>
-    <string name="prevent_auto_refresh_summary">阻止回到前台时自动刷新，保留下拉刷新和继续加载</string>
+    <string name="prevent_auto_refresh_summary">冷启动时保留上次内容，并阻止返回前台自动刷新；保留下拉刷新和继续加载</string>
     <string name="hide_live_button">隐藏直播按钮</string>
     <string name="hide_live_button_summary">移除首页顶部直播入口</string>
     <string name="hide_red_dots">隐藏小红点</string>

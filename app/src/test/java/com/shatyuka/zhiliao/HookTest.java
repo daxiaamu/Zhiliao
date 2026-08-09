@@ -32,6 +32,7 @@ import com.shatyuka.zhiliao.hooks.ZhihuSettingsEntry;
 
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
@@ -330,6 +331,25 @@ public class HookTest {
     }
 
     @Test
+    public void autoRefreshKeepsFirstInitialResultAndAllowsManualRefresh() throws Throwable {
+        Object fragment = new Object();
+        Method markStarted = AutoRefresh.class.getDeclaredMethod(
+                "markRefreshStarted", Object.class, boolean.class);
+        Method shouldSuppress = AutoRefresh.class.getDeclaredMethod(
+                "shouldSuppressRefreshResult", Object.class);
+        markStarted.setAccessible(true);
+        shouldSuppress.setAccessible(true);
+
+        markStarted.invoke(null, fragment, false);
+        assertFalse((boolean) shouldSuppress.invoke(null, fragment));
+        assertTrue((boolean) shouldSuppress.invoke(null, fragment));
+        assertTrue((boolean) shouldSuppress.invoke(null, fragment));
+
+        markStarted.invoke(null, fragment, true);
+        assertFalse((boolean) shouldSuppress.invoke(null, fragment));
+    }
+
+    @Test
     public void autoRefresh114TargetsOnlyAutomaticGate() throws Throwable {
         PackageInfo domestic114 = null;
         for (PackageInfo packageInfo : packageInfos) {
@@ -361,6 +381,20 @@ public class HookTest {
         assertEquals(4, target.getParameterCount());
         assertEquals(long.class, target.getParameterTypes()[0]);
         assertEquals(int.class, target.getParameterTypes()[1]);
+
+        Field reasonRefreshField = AutoRefresh.class.getDeclaredField("reasonRefresh");
+        reasonRefreshField.setAccessible(true);
+        Method reasonRefresh = (Method) reasonRefreshField.get(null);
+        assertNotNull("Refresh reason boundary was not resolved", reasonRefresh);
+        assertEquals(boolean.class, reasonRefresh.getParameterTypes()[0]);
+        assertEquals("com.zhihu.android.feed.delegate.m",
+                reasonRefresh.getParameterTypes()[1].getName());
+
+        Field postResultField = AutoRefresh.class.getDeclaredField("postRefreshSucceed");
+        postResultField.setAccessible(true);
+        Method postResult = (Method) postResultField.get(null);
+        assertNotNull("Refresh result boundary was not resolved", postResult);
+        assertEquals("postRefreshSucceed", postResult.getName());
     }
 
     @Test
