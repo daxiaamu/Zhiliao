@@ -41,7 +41,7 @@ public class CompatibilityRegistryTest {
     public void catalogDrivesAdaptedVersionDialog() throws Exception {
         initialize(40408);
         assertEquals(2, CompatibilityRegistry.getAdaptedVersions().size());
-        assertEquals("国内版", CompatibilityRegistry.getAdaptedVersions().get(0).displayName);
+        assertEquals("\u56fd\u5185\u7248", CompatibilityRegistry.getAdaptedVersions().get(0).displayName);
         assertEquals("https://pan.quark.cn/s/4f43a6eab295",
                 CompatibilityRegistry.getCompatibilityUrl());
     }
@@ -56,7 +56,7 @@ public class CompatibilityRegistryTest {
                 + "\"compatibilityUrl\":\"https://example.com/zhihu\","
                 + "\"defaults\":{\"symbols\":{}},\"profiles\":[{"
                 + "\"id\":\"play-10.96.0-30000\",\"channel\":\"play\","
-                + "\"displayName\":\"Google Play 版\",\"versionName\":\"10.96.0\","
+                + "\"displayName\":\"Google Play \u7248\",\"versionName\":\"10.96.0\","
                 + "\"minVersionCode\":30000,\"maxVersionCode\":30000,"
                 + "\"status\":\"adapted\",\"symbols\":{}}]}";
         InputStream input = new java.io.ByteArrayInputStream(remote.getBytes(StandardCharsets.UTF_8));
@@ -67,6 +67,53 @@ public class CompatibilityRegistryTest {
         assertEquals("10.96.0", CompatibilityRegistry.getAdaptedVersions().get(0).versionName);
         assertEquals("play", CompatibilityRegistry.getAdaptedVersions().get(0).channel);
         assertEquals("https://example.com/zhihu", CompatibilityRegistry.getCompatibilityUrl());
+    }
+
+    @Test
+    public void arbitraryTargetSlotsAndProfileFeatureOverridesAreDataDriven() {
+        String config = "{\"schemaVersion\":1,\"revision\":2,"
+                + "\"targetPackage\":\"com.zhihu.android\","
+                + "\"defaults\":{\"symbols\":{\"futureHook.ownerClasses\":"
+                + "[\"com.zhihu.future.Owner\"]},"
+                + "\"features\":{\"AutoRefresh\":false,\"SearchAd\":false},"
+                + "\"dexRules\":{\"futureHook.owner\":{\"result\":\"ownerClass\","
+                + "\"searchPackages\":[\"com.zhihu.future\"],"
+                + "\"methodNames\":[\"bind\"],\"paramCount\":1,"
+                + "\"minCandidates\":1,\"maxCandidates\":1}}},"
+                + "\"profiles\":[{\"id\":\"future\",\"channel\":\"play\","
+                + "\"displayName\":\"Play\",\"versionName\":\"12.0\","
+                + "\"minVersionCode\":50000,\"maxVersionCode\":50000,"
+                + "\"status\":\"adapted\",\"symbols\":{},"
+                + "\"features\":{\"AutoRefresh\":true}}]}";
+        InputStream input = new java.io.ByteArrayInputStream(
+                config.getBytes(StandardCharsets.UTF_8));
+        CompatibilityRegistry.initialize(input, 50000);
+
+        assertEquals("com.zhihu.future.Owner",
+                CompatibilityRegistry.getSymbolCandidates("futureHook.ownerClasses").get(0));
+        assertTrue(CompatibilityRegistry.isFeatureEnabled("AutoRefresh"));
+        assertFalse(CompatibilityRegistry.isFeatureEnabled("SearchAd"));
+        assertTrue(CompatibilityRegistry.isFeatureEnabled("UnspecifiedHook"));
+        CompatibilityRegistry.DexRule rule =
+                CompatibilityRegistry.getDexRule("futureHook.owner");
+        assertEquals("ownerClass", rule.result);
+        assertEquals("com.zhihu.future", rule.searchPackages.get(0));
+        assertEquals("bind", rule.methodNames.get(0));
+        assertEquals(1, rule.paramCount);
+    }
+
+    @Test
+    public void unscopedDexRuleFailsClosed() {
+        String invalid = "{\"schemaVersion\":1,\"revision\":3,"
+                + "\"targetPackage\":\"com.zhihu.android\","
+                + "\"defaults\":{\"symbols\":{},\"dexRules\":{\"unsafe\":{"
+                + "\"result\":\"method\",\"searchPackages\":[],"
+                + "\"methodNames\":[\"run\"]}}},\"profiles\":[]}";
+        InputStream input = new java.io.ByteArrayInputStream(
+                invalid.getBytes(StandardCharsets.UTF_8));
+        CompatibilityRegistry.initialize(input, 40408);
+        assertEquals(0, CompatibilityRegistry.getRevision());
+        assertTrue(CompatibilityRegistry.getDexRule("unsafe") == null);
     }
 
     @Test

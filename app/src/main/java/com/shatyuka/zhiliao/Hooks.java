@@ -79,6 +79,11 @@ public class Hooks {
     public static void init(final ClassLoader classLoader) {
         List<String> failedHooks = new ArrayList<>();
         for (IHook hook : hooks) {
+            if (!CompatibilityRegistry.isFeatureEnabled(hook.getClass().getSimpleName())) {
+                XposedBridge.log("[Zhiliao] Hook disabled by compatibility config: "
+                        + hook.getClass().getSimpleName());
+                continue;
+            }
             try {
                 hook.init(classLoader);
                 hook.hook();

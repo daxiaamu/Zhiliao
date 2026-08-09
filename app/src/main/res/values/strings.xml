@@ -5,6 +5,13 @@
     <string name="app_tagline">少一点打扰，多一点内容</string>
     <string name="version_format">版本 %1$s</string>
     <string name="cloud_config_version_format">云配版本 %1$d</string>
+    <string name="cloud_config_reload">重新加载</string>
+    <string name="cloud_config_reloading">正在加载…</string>
+    <string name="cloud_config_reload_title">重新加载云配置</string>
+    <string name="cloud_config_reload_message">重新加载完成后将关闭并重新启动知乎。是否继续？</string>
+    <string name="cloud_config_reload_confirm">重新加载并重启</string>
+    <string name="cloud_config_reload_failed">云配置重新加载失败：%1$s</string>
+    <string name="cloud_config_invalid">配置校验未通过</string>
     <string name="module_settings">模块设置</string>
     <string name="ad_settings">广告与启动</string>
     <string name="content_settings">内容与交互</string>

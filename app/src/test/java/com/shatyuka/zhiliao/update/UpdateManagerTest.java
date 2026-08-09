@@ -1,5 +1,7 @@
 package com.shatyuka.zhiliao.update;
 
+import org.json.JSONArray;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -7,6 +9,7 @@ import org.junit.rules.TemporaryFolder;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -35,10 +38,43 @@ public class UpdateManagerTest {
     }
 
     @Test
+    public void newestUpdateMetadataWinsOverFirstStaleCdn() {
+        UpdateInfo stale = new UpdateInfo(10, "old", "https://example.com/old.apk",
+                "a", "", "");
+        UpdateInfo newest = new UpdateInfo(11, "new", "https://example.com/new.apk",
+                "b", "", "");
+
+        UpdateInfo selected = UpdateManager.selectNewerUpdate(stale, newest);
+
+        assertEquals(11, selected.versionCode);
+        assertEquals("new", selected.versionName);
+    }
+    @Test
     public void compatibilityManifestHasSixCdnSources() {
         assertEquals(6, UpdateManager.COMPATIBILITY_MANIFEST_URLS.length);
         for (String source : UpdateManager.COMPATIBILITY_MANIFEST_URLS)
             org.junit.Assert.assertTrue(source.startsWith("https://"));
+    }
+
+    @Test
+    public void newestCompatibilityManifestWinsOverFirstStaleCdn() {
+        List<UpdateManager.CompatibilityManifest> manifests = new ArrayList<>();
+        manifests.add(new UpdateManager.CompatibilityManifest(
+                2026081001L, "old", new JSONArray()));
+        manifests.add(new UpdateManager.CompatibilityManifest(
+                2026081002L, "new", new JSONArray()));
+
+        UpdateManager.sortCompatibilityManifests(manifests);
+
+        assertEquals(2026081002L, manifests.get(0).revision);
+        assertEquals("new", manifests.get(0).sha256);
+    }
+    @Test
+    public void compatibilityManifestCacheBusterPreservesExistingQuery() {
+        assertEquals("https://example.com/config.json?t=42",
+                UpdateManager.withCacheBuster("https://example.com/config.json", 42));
+        assertEquals("https://example.com/config.json?source=cdn&t=42",
+                UpdateManager.withCacheBuster("https://example.com/config.json?source=cdn", 42));
     }
 
     @Test

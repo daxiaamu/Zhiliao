@@ -53,6 +53,10 @@ public class Helper {
     public static boolean officialZhihu = true;
 
     public final static String hookPackage = "com.zhihu.android";
+    public final static String ACTION_RESTART_ZHIHU =
+            "com.shatyuka.zhiliao.action.RESTART_ZHIHU";
+    public final static String RESTART_PERMISSION =
+            "com.shatyuka.zhiliao.permission.RESTART_ZHIHU";
     private final static byte[] signature = new byte[]{(byte) 0xB6, (byte) 0xF9, (byte) 0x97, (byte) 0xE3, (byte) 0x82, 0x7B, (byte) 0xE1, 0x1A, (byte) 0xF2, (byte) 0xFA, 0x4A, 0x15, 0x3F, (byte) 0xEA, 0x3F, (byte) 0xE6, 0x27, 0x68, 0x66, 0x02};
 
     /** @noinspection RedundantSuppression*/

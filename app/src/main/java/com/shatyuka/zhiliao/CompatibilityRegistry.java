@@ -36,14 +36,16 @@ public final class CompatibilityRegistry {
     private static final int SCHEMA_VERSION = 1;
     private static final int MAX_CONFIG_BYTES = 256 * 1024;
     private static final Pattern SYMBOL = Pattern.compile("[A-Za-z_$][A-Za-z0-9_.$]*");
-    private static final Set<String> SUPPORTED_SYMBOL_KEYS = Collections.unmodifiableSet(
-            new LinkedHashSet<>(Arrays.asList(
-                    "searchResponseConverters", "cashEntryMethods")));
+    private static final Set<String> DEX_RULE_FIELDS = Collections.unmodifiableSet(
+            new LinkedHashSet<>(Arrays.asList("result", "searchPackages", "methodNames",
+                    "paramTypes", "returnType", "paramCount", "usingStrings", "invokes",
+                    "fieldNames", "fieldType", "minCandidates", "maxCandidates")));
 
     private static Catalog catalog = Catalog.empty();
     private static Profile activeProfile;
     private static long activeVersionCode = -1;
     private static boolean remoteConfigActive;
+    private static String lastInstallError = "";
 
     private CompatibilityRegistry() {
     }
@@ -80,6 +82,22 @@ public final class CompatibilityRegistry {
         return new ArrayList<>(result);
     }
 
+    public static synchronized boolean isFeatureEnabled(String hookName) {
+        if (!SYMBOL.matcher(hookName).matches())
+            return false;
+        if (activeProfile != null && activeProfile.features.containsKey(hookName))
+            return activeProfile.features.get(hookName);
+        return catalog.features.getOrDefault(hookName, true);
+    }
+
+    public static synchronized DexRule getDexRule(String key) {
+        if (!SYMBOL.matcher(key).matches())
+            return null;
+        if (activeProfile != null && activeProfile.dexRules.containsKey(key))
+            return activeProfile.dexRules.get(key);
+        return catalog.dexRules.get(key);
+    }
+
     public static synchronized List<CatalogEntry> getAdaptedVersions() {
         List<CatalogEntry> result = new ArrayList<>();
         for (Profile profile : catalog.profiles) {
@@ -106,21 +124,39 @@ public final class CompatibilityRegistry {
         return remoteConfigActive;
     }
 
+    public static synchronized String getLastInstallError() {
+        return lastInstallError;
+    }
+
     /**
      * Installs a future cloud profile after hash verification and full schema validation.
      * expectedSha256 must come from an authenticated manifest, not from the JSON response.
      */
     public static synchronized boolean installRemoteConfig(SharedPreferences preferences,
                                                            String json, String expectedSha256) {
+        lastInstallError = "";
         if (preferences == null || json == null || expectedSha256 == null
-                || json.getBytes(StandardCharsets.UTF_8).length > MAX_CONFIG_BYTES)
+                || json.getBytes(StandardCharsets.UTF_8).length > MAX_CONFIG_BYTES) {
+            lastInstallError = "invalid arguments or config size";
             return false;
+        }
         Catalog candidate = parse(json);
-        if (!sha256(json).equalsIgnoreCase(expectedSha256.trim()) || candidate == null
-                || candidate.revision < catalog.revision)
+        if (candidate == null) {
+            lastInstallError = "schema validation failed";
             return false;
-        if (!preferences.edit().putString(REMOTE_CONFIG_KEY, json).commit())
+        }
+        if (!sha256(json).equalsIgnoreCase(expectedSha256.trim())) {
+            lastInstallError = "SHA-256 mismatch";
             return false;
+        }
+        if (candidate.revision < catalog.revision) {
+            lastInstallError = "remote revision is older than built-in revision";
+            return false;
+        }
+        if (!preferences.edit().putString(REMOTE_CONFIG_KEY, json).commit()) {
+            lastInstallError = "preferences commit failed";
+            return false;
+        }
         apply(candidate, activeVersionCode, true);
         return true;
     }
@@ -182,9 +218,13 @@ public final class CompatibilityRegistry {
                 return null;
 
             String compatibilityUrl = optionalHttpsUrl(root, "compatibilityUrl");
+            JSONObject defaultsObject = root.optJSONObject("defaults");
             Map<String, List<String>> defaults = readSymbols(
-                    root.optJSONObject("defaults") == null ? null
-                            : root.optJSONObject("defaults").optJSONObject("symbols"));
+                    defaultsObject == null ? null : defaultsObject.optJSONObject("symbols"));
+            Map<String, Boolean> defaultFeatures = readFeatures(
+                    defaultsObject == null ? null : defaultsObject.optJSONObject("features"));
+            Map<String, DexRule> defaultDexRules = readDexRules(
+                    defaultsObject == null ? null : defaultsObject.optJSONObject("dexRules"));
             JSONArray array = root.getJSONArray("profiles");
             if (array.length() > 100)
                 return null;
@@ -202,9 +242,12 @@ public final class CompatibilityRegistry {
                 if (!ids.add(id) || min < 1 || max < min)
                     return null;
                 profiles.add(new Profile(id, channel, displayName, versionName,
-                        min, max, status, readSymbols(item.optJSONObject("symbols"))));
+                        min, max, status, readSymbols(item.optJSONObject("symbols")),
+                        readFeatures(item.optJSONObject("features")),
+                        readDexRules(item.optJSONObject("dexRules"))));
             }
-            return new Catalog(revision, compatibilityUrl, defaults, profiles);
+            return new Catalog(revision, compatibilityUrl, defaults, defaultFeatures,
+                    defaultDexRules, profiles);
         } catch (Throwable ignored) {
             return null;
         }
@@ -233,9 +276,10 @@ public final class CompatibilityRegistry {
         if (object == null)
             return result;
         Iterator<String> keys = object.keys();
+        int keyCount = 0;
         while (keys.hasNext()) {
             String key = keys.next();
-            if (!SYMBOL.matcher(key).matches() || !SUPPORTED_SYMBOL_KEYS.contains(key))
+            if (++keyCount > 256 || !SYMBOL.matcher(key).matches())
                 throw new IllegalArgumentException("symbol key");
             JSONArray values = object.getJSONArray(key);
             if (values.length() > 100)
@@ -252,6 +296,98 @@ public final class CompatibilityRegistry {
         return Collections.unmodifiableMap(result);
     }
 
+    private static Map<String, Boolean> readFeatures(JSONObject object) throws Exception {
+        Map<String, Boolean> result = new LinkedHashMap<>();
+        if (object == null)
+            return Collections.unmodifiableMap(result);
+        Iterator<String> keys = object.keys();
+        int count = 0;
+        while (keys.hasNext()) {
+            String key = keys.next();
+            if (++count > 100 || !SYMBOL.matcher(key).matches()
+                    || !(object.get(key) instanceof Boolean))
+                throw new IllegalArgumentException("feature flag");
+            result.put(key, object.getBoolean(key));
+        }
+        return Collections.unmodifiableMap(result);
+    }
+
+    private static Map<String, DexRule> readDexRules(JSONObject object) throws Exception {
+        Map<String, DexRule> result = new LinkedHashMap<>();
+        if (object == null)
+            return Collections.unmodifiableMap(result);
+        Iterator<String> keys = object.keys();
+        int count = 0;
+        while (keys.hasNext()) {
+            String key = keys.next();
+            if (++count > 100 || !SYMBOL.matcher(key).matches())
+                throw new IllegalArgumentException("dex rule key");
+            JSONObject rule = object.getJSONObject(key);
+            Iterator<String> fieldKeys = rule.keys();
+            while (fieldKeys.hasNext()) {
+                if (!DEX_RULE_FIELDS.contains(fieldKeys.next()))
+                    throw new IllegalArgumentException("dex rule field");
+            }
+            String resultType = rule.optString("result", "method").trim();
+            if (!"method".equals(resultType) && !"ownerClass".equals(resultType)
+                    && !"field".equals(resultType) && !"fieldOwnerClass".equals(resultType))
+                throw new IllegalArgumentException("dex rule result");
+            List<String> searchPackages = readStringList(rule, "searchPackages", 1, 8, true);
+            List<String> methodNames = readStringList(rule, "methodNames", 0, 16, true);
+            boolean hasParamTypes = rule.has("paramTypes");
+            List<String> paramTypes = readStringList(rule, "paramTypes", 0, 32, true);
+            List<String> usingStrings = readStringList(rule, "usingStrings", 0, 16, false);
+            List<String> invokes = readStringList(rule, "invokes", 0, 16, false);
+            List<String> fieldNames = readStringList(rule, "fieldNames", 0, 16, true);
+            String returnType = rule.optString("returnType", "").trim();
+            String fieldType = rule.optString("fieldType", "").trim();
+            if ((!returnType.isEmpty() && !SYMBOL.matcher(returnType).matches())
+                    || (!fieldType.isEmpty() && !SYMBOL.matcher(fieldType).matches()))
+                throw new IllegalArgumentException("dex rule type");
+            int paramCount = rule.has("paramCount") ? rule.getInt("paramCount") : -1;
+            int minCandidates = rule.optInt("minCandidates", 1);
+            int maxCandidates = rule.optInt("maxCandidates", 1);
+            boolean methodRule = "method".equals(resultType) || "ownerClass".equals(resultType);
+            boolean fieldRule = "field".equals(resultType) || "fieldOwnerClass".equals(resultType);
+            if (paramCount < -1 || paramCount > 32 || minCandidates < 1
+                    || maxCandidates < minCandidates || maxCandidates > 16
+                    || (hasParamTypes && paramCount >= 0 && paramTypes.size() != paramCount)
+                    || (methodRule && (!fieldNames.isEmpty() || !fieldType.isEmpty()))
+                    || (fieldRule && (!methodNames.isEmpty() || hasParamTypes
+                    || !usingStrings.isEmpty() || !invokes.isEmpty()
+                    || !returnType.isEmpty() || paramCount >= 0))
+                    || (methodRule && methodNames.isEmpty() && !hasParamTypes
+                    && usingStrings.isEmpty() && invokes.isEmpty()
+                    && returnType.isEmpty() && paramCount < 0)
+                    || (fieldRule && fieldNames.isEmpty() && fieldType.isEmpty()))
+                throw new IllegalArgumentException("dex rule bounds");
+            result.put(key, new DexRule(resultType, searchPackages, methodNames, returnType,
+                    paramCount, hasParamTypes, paramTypes, usingStrings, invokes, fieldNames,
+                    fieldType, minCandidates, maxCandidates));
+        }
+        return Collections.unmodifiableMap(result);
+    }
+
+    private static List<String> readStringList(JSONObject object, String key, int min, int max,
+                                               boolean symbolsOnly) throws Exception {
+        JSONArray values = object.optJSONArray(key);
+        if (values == null) {
+            if (min > 0)
+                throw new IllegalArgumentException(key);
+            return Collections.emptyList();
+        }
+        if (values.length() < min || values.length() > max)
+            throw new IllegalArgumentException(key);
+        List<String> result = new ArrayList<>();
+        for (int i = 0; i < values.length(); i++) {
+            String value = values.getString(i).trim();
+            if (value.isEmpty() || value.length() > 200
+                    || (symbolsOnly && !SYMBOL.matcher(value).matches()))
+                throw new IllegalArgumentException(key);
+            result.add(value);
+        }
+        return Collections.unmodifiableList(result);
+    }
     private static String sha256(String value) {
         try {
             byte[] digest = MessageDigest.getInstance("SHA-256")
@@ -265,6 +401,41 @@ public final class CompatibilityRegistry {
         }
     }
 
+    public static final class DexRule {
+        public final String result;
+        public final List<String> searchPackages;
+        public final List<String> methodNames;
+        public final String returnType;
+        public final int paramCount;
+        public final boolean hasParamTypes;
+        public final List<String> paramTypes;
+        public final List<String> usingStrings;
+        public final List<String> invokes;
+        public final List<String> fieldNames;
+        public final String fieldType;
+        public final int minCandidates;
+        public final int maxCandidates;
+
+        DexRule(String result, List<String> searchPackages, List<String> methodNames,
+                String returnType, int paramCount, boolean hasParamTypes,
+                List<String> paramTypes, List<String> usingStrings, List<String> invokes,
+                List<String> fieldNames, String fieldType, int minCandidates,
+                int maxCandidates) {
+            this.result = result;
+            this.searchPackages = searchPackages;
+            this.methodNames = methodNames;
+            this.returnType = returnType;
+            this.paramCount = paramCount;
+            this.hasParamTypes = hasParamTypes;
+            this.paramTypes = paramTypes;
+            this.usingStrings = usingStrings;
+            this.invokes = invokes;
+            this.fieldNames = fieldNames;
+            this.fieldType = fieldType;
+            this.minCandidates = minCandidates;
+            this.maxCandidates = maxCandidates;
+        }
+    }
     public static final class CatalogEntry {
         public final String displayName;
         public final String versionName;
@@ -291,10 +462,13 @@ public final class CompatibilityRegistry {
         final long maxVersionCode;
         final String status;
         final Map<String, List<String>> symbols;
+        final Map<String, Boolean> features;
+        final Map<String, DexRule> dexRules;
 
         Profile(String id, String channel, String displayName, String versionName,
                 long minVersionCode, long maxVersionCode, String status,
-                Map<String, List<String>> symbols) {
+                Map<String, List<String>> symbols, Map<String, Boolean> features,
+                Map<String, DexRule> dexRules) {
             this.id = id;
             this.channel = channel;
             this.displayName = displayName;
@@ -303,6 +477,8 @@ public final class CompatibilityRegistry {
             this.maxVersionCode = maxVersionCode;
             this.status = status;
             this.symbols = symbols;
+            this.features = features;
+            this.dexRules = dexRules;
         }
     }
 
@@ -310,22 +486,28 @@ public final class CompatibilityRegistry {
         final long revision;
         final String compatibilityUrl;
         final Map<String, List<String>> defaults;
+        final Map<String, Boolean> features;
+        final Map<String, DexRule> dexRules;
         final List<Profile> profiles;
 
         Catalog(long revision, String compatibilityUrl, Map<String, List<String>> defaults,
+                Map<String, Boolean> features, Map<String, DexRule> dexRules,
                 List<Profile> profiles) {
             this.revision = revision;
             this.compatibilityUrl = compatibilityUrl;
             this.defaults = defaults;
+            this.features = features;
+            this.dexRules = dexRules;
             this.profiles = Collections.unmodifiableList(profiles);
         }
 
         Catalog withCompatibilityUrl(String value) {
-            return new Catalog(revision, value, defaults, profiles);
+            return new Catalog(revision, value, defaults, features, dexRules, profiles);
         }
 
         static Catalog empty() {
-            return new Catalog(0, "", Collections.emptyMap(), Collections.emptyList());
+            return new Catalog(0, "", Collections.emptyMap(), Collections.emptyMap(),
+                    Collections.emptyMap(), Collections.emptyList());
         }
     }
 }

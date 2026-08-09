@@ -350,6 +350,38 @@ public class HookTest {
     }
 
     @Test
+    public void autoRefreshModernFixturesResolveAllBoundaries() throws Throwable {
+        for (PackageInfo packageInfo : packageInfos) {
+            if (packageInfo.versionCode < 29522)
+                continue;
+
+            resetState(AutoRefresh.class);
+            try (InputStream compatibility = new FileInputStream(
+                    "src/main/assets/compatibility/compatibility-v1.json")) {
+                CompatibilityRegistry.initialize(compatibility, packageInfo.versionCode);
+            }
+            new AutoRefresh().init(packageInfo.classLoader);
+
+            Field targetField = AutoRefresh.class.getDeclaredField("tryRefresh");
+            targetField.setAccessible(true);
+            assertNotNull(packageInfo.name + ": automatic refresh gate was not resolved",
+                    (Method) targetField.get(null));
+
+            Field boundariesField = AutoRefresh.class.getDeclaredField("reasonRefreshMethods");
+            boundariesField.setAccessible(true);
+            @SuppressWarnings("unchecked")
+            List<Method> boundaries = (List<Method>) boundariesField.get(null);
+            assertFalse(packageInfo.name + ": refresh reason boundary was not resolved",
+                    boundaries.isEmpty());
+
+            Field postResultField = AutoRefresh.class.getDeclaredField("postRefreshSucceed");
+            postResultField.setAccessible(true);
+            assertNotNull(packageInfo.name + ": refresh result boundary was not resolved",
+                    (Method) postResultField.get(null));
+        }
+    }
+
+    @Test
     public void autoRefresh114TargetsOnlyAutomaticGate() throws Throwable {
         PackageInfo domestic114 = null;
         for (PackageInfo packageInfo : packageInfos) {
@@ -395,6 +427,48 @@ public class HookTest {
         Method postResult = (Method) postResultField.get(null);
         assertNotNull("Refresh result boundary was not resolved", postResult);
         assertEquals("postRefreshSucceed", postResult.getName());
+    }
+
+    @Test
+    public void autoRefreshPlay1095ResolvesConfiguredBoundaries() throws Throwable {
+        PackageInfo play1095 = null;
+        for (PackageInfo packageInfo : packageInfos) {
+            if (packageInfo.versionCode == 29522) {
+                play1095 = packageInfo;
+                break;
+            }
+        }
+        assumeTrue("Zhihu Play 10.95.0 compatibility fixture is not available", play1095 != null);
+
+        resetState(AutoRefresh.class);
+        try (InputStream compatibility = new FileInputStream(
+                "src/main/assets/compatibility/compatibility-v1.json")) {
+            CompatibilityRegistry.initialize(compatibility, play1095.versionCode);
+        }
+        new AutoRefresh().init(play1095.classLoader);
+
+        Field targetField = AutoRefresh.class.getDeclaredField("tryRefresh");
+        targetField.setAccessible(true);
+        Method target = (Method) targetField.get(null);
+        assertNotNull("Play automatic refresh gate was not resolved", target);
+        assertEquals("com.zhihu.android.app.feed.util.FeedAutoRefreshManager",
+                target.getDeclaringClass().getName());
+
+        Field boundariesField = AutoRefresh.class.getDeclaredField("reasonRefreshMethods");
+        boundariesField.setAccessible(true);
+        @SuppressWarnings("unchecked")
+        List<Method> boundaries = (List<Method>) boundariesField.get(null);
+        assertEquals("Play wrapper and implementation boundaries must both be hooked",
+                2, boundaries.size());
+        for (Method boundary : boundaries) {
+            assertEquals(boolean.class, boundary.getParameterTypes()[0]);
+            assertEquals("g40.k", boundary.getParameterTypes()[1].getName());
+        }
+
+        Field postResultField = AutoRefresh.class.getDeclaredField("postRefreshSucceed");
+        postResultField.setAccessible(true);
+        assertNotNull("Play refresh result boundary was not resolved",
+                (Method) postResultField.get(null));
     }
 
     @Test

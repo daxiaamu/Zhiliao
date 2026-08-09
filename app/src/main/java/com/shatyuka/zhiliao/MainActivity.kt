@@ -85,6 +85,9 @@ class MainActivity : ComponentActivity() {
     private var updateSkipped by mutableStateOf(false)
     private var showUpdateDialog by mutableStateOf(false)
     private var showCompatibilityDialog by mutableStateOf(false)
+    private var showCompatibilityReloadDialog by mutableStateOf(false)
+    private var compatibilityReloadNeeded by mutableStateOf(false)
+    private var compatibilityReloading by mutableStateOf(false)
     private var compatibilityEntries by mutableStateOf<List<CompatibilityRegistry.CatalogEntry>>(emptyList())
     private var compatibilityUrl by mutableStateOf("")
     private var remoteCompatibilityRevision by mutableStateOf<Long?>(null)
@@ -222,6 +225,7 @@ class MainActivity : ComponentActivity() {
 
             availableUpdate?.takeIf { showUpdateDialog }?.let { UpdateDialog(it) }
             if (showCompatibilityDialog) CompatibilityDialog()
+            if (showCompatibilityReloadDialog) CompatibilityReloadDialog()
             errorMessage?.let { message ->
                 AlertDialog(
                     onDismissRequest = { errorMessage = null },
@@ -382,8 +386,54 @@ class MainActivity : ComponentActivity() {
                         )
                     }
                 }
+                if (compatibilityReloadNeeded) {
+                    TextButton(
+                        onClick = { showCompatibilityReloadDialog = true },
+                        enabled = !compatibilityReloading,
+                    ) {
+                        if (compatibilityReloading) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(16.dp),
+                                strokeWidth = 2.dp,
+                            )
+                            Spacer(Modifier.size(6.dp))
+                        }
+                        Text(
+                            stringResource(
+                                if (compatibilityReloading) {
+                                    R.string.cloud_config_reloading
+                                } else {
+                                    R.string.cloud_config_reload
+                                },
+                            ),
+                        )
+                    }
+                }
             }
         }
+    }
+
+    @Composable
+    private fun CompatibilityReloadDialog() {
+        AlertDialog(
+            onDismissRequest = { showCompatibilityReloadDialog = false },
+            icon = { Icon(Icons.Outlined.Refresh, contentDescription = null) },
+            title = { Text(stringResource(R.string.cloud_config_reload_title)) },
+            text = { Text(stringResource(R.string.cloud_config_reload_message)) },
+            confirmButton = {
+                Button(onClick = {
+                    showCompatibilityReloadDialog = false
+                    checkCompatibilityConfig(restartZhihuOnSuccess = true)
+                }) {
+                    Text(stringResource(R.string.cloud_config_reload_confirm))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showCompatibilityReloadDialog = false }) {
+                    Text(stringResource(android.R.string.cancel))
+                }
+            },
+        )
     }
 
     @Composable
@@ -727,6 +777,8 @@ class MainActivity : ComponentActivity() {
         remoteCompatibilityRevision = revision.takeIf {
             CompatibilityRegistry.isRemoteConfigActive()
         }
+        compatibilityReloadNeeded =
+            source.getLong(KEY_PENDING_COMPATIBILITY_RESTART_REVISION, 0) > 0
         val lastNotified = source.getLong(KEY_NOTIFIED_COMPATIBILITY_REVISION, 0)
         if (notifyRemoteUpdate && CompatibilityRegistry.isRemoteConfigActive()
             && revision > lastNotified
@@ -737,22 +789,67 @@ class MainActivity : ComponentActivity() {
     }
 
     /** Single completion path for the future cloud downloader: verify, persist, load, then notify. */
-    private fun applyDownloadedCompatibilityConfig(json: String, expectedSha256: String): Boolean {
+    private fun applyDownloadedCompatibilityConfig(
+        json: String,
+        expectedSha256: String,
+        notifyRemoteUpdate: Boolean = true,
+    ): Boolean {
         val previousRevision = CompatibilityRegistry.getRevision()
         if (!CompatibilityRegistry.installRemoteConfig(preferences, json, expectedSha256)) return false
         loadCompatibilityConfig(
             preferences,
-            notifyRemoteUpdate = CompatibilityRegistry.getRevision() > previousRevision,
+            notifyRemoteUpdate = notifyRemoteUpdate &&
+                CompatibilityRegistry.getRevision() > previousRevision,
         )
         return true
     }
 
-    private fun checkCompatibilityConfig() {
+    private fun checkCompatibilityConfig(restartZhihuOnSuccess: Boolean = false) {
+        if (restartZhihuOnSuccess) compatibilityReloading = true
+        val previousRevision = CompatibilityRegistry.getRevision()
         updateManager.checkCompatibilityConfig { json, sha256, error ->
-            if (error == null && json != null && sha256 != null) {
-                applyDownloadedCompatibilityConfig(json, sha256)
+            val loaded = error == null && json != null && sha256 != null &&
+                applyDownloadedCompatibilityConfig(
+                    json,
+                    sha256,
+                    notifyRemoteUpdate = !restartZhihuOnSuccess,
+                )
+            val revisionChanged = loaded &&
+                CompatibilityRegistry.getRevision() > previousRevision
+            compatibilityReloading = false
+            if (loaded && restartZhihuOnSuccess) {
+                preferences.edit()
+                    .remove(KEY_PENDING_COMPATIBILITY_RESTART_REVISION)
+                    .apply()
+                compatibilityReloadNeeded = false
+                restartZhihu()
+            } else {
+                if (revisionChanged) {
+                    preferences.edit().putLong(
+                        KEY_PENDING_COMPATIBILITY_RESTART_REVISION,
+                        CompatibilityRegistry.getRevision(),
+                    ).apply()
+                }
+                compatibilityReloadNeeded = !loaded ||
+                    preferences.getLong(KEY_PENDING_COMPATIBILITY_RESTART_REVISION, 0) > 0
+                if (!loaded && restartZhihuOnSuccess) {
+                    val installError = CompatibilityRegistry.getLastInstallError()
+                    val detail = error?.message ?: installError.takeIf { it.isNotBlank() }
+                        ?: getString(R.string.cloud_config_invalid)
+                    errorMessage = getString(R.string.cloud_config_reload_failed, detail)
+                }
             }
         }
+    }
+
+    private fun restartZhihu() {
+        sendBroadcast(Intent(Helper.ACTION_RESTART_ZHIHU).setPackage(Helper.hookPackage))
+        window.decorView.postDelayed({
+            packageManager.getLaunchIntentForPackage(Helper.hookPackage)?.let { launchIntent ->
+                launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                startActivity(launchIntent)
+            }
+        }, ZHIHU_RESTART_FALLBACK_DELAY_MS)
     }
 
     private fun downloadUpdate(info: UpdateInfo) {
@@ -825,6 +922,7 @@ class MainActivity : ComponentActivity() {
 
     companion object {
         private const val SCOPE_RECHECK_DELAY_MS = 750L
+        private const val ZHIHU_RESTART_FALLBACK_DELAY_MS = 1_000L
         private data class HookOption(
             val key: String,
             val title: Int,
@@ -851,6 +949,8 @@ class MainActivity : ComponentActivity() {
         private const val DEFAULT_SENSITIVITY = 5
         private const val KEY_SKIPPED_VERSION = "skipped_update_version"
         private const val KEY_NOTIFIED_COMPATIBILITY_REVISION = "notified_compatibility_revision_v1"
+        private const val KEY_PENDING_COMPATIBILITY_RESTART_REVISION =
+            "pending_compatibility_restart_revision_v1"
         private const val STATE_PENDING_APK = "pending_apk"
         private const val NOT_DOWNLOADING = -2
         private const val GITHUB_URL = "https://github.com/daxiaamu/Zhiliao"

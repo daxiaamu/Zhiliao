@@ -16,3 +16,5 @@ app/.cxx
 __pycache__/
 *.pyc
 app/test/*.jar
+/.gradle-user-home/
+/.tmp/

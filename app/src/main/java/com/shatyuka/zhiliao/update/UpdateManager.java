@@ -19,8 +19,10 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -172,32 +174,50 @@ public final class UpdateManager {
 
     private CompatibilityPayload fetchCompatibilityPayload() throws Exception {
         Throwable lastError = null;
+        Map<String, CompatibilityManifest> manifests = new LinkedHashMap<>();
         for (String manifestSource : COMPATIBILITY_MANIFEST_URLS) {
             try {
-                JSONObject manifest = fetchJson(manifestSource, 256 * 1024);
+                JSONObject manifest = new JSONObject(fetchText(
+                        withCacheBuster(manifestSource), 256 * 1024, 5000, 10000));
                 if (manifest.getInt("schemaVersion") != 1)
                     throw new IllegalStateException("Unsupported compatibility manifest");
-                String expectedSha256 = manifest.getString("sha256").trim().toLowerCase(Locale.ROOT);
-                if (!expectedSha256.matches("[0-9a-f]{64}"))
-                    throw new IllegalStateException("Invalid compatibility SHA-256");
+                long revision = manifest.getLong("revision");
+                String expectedSha256 = manifest.getString("sha256")
+                        .trim().toLowerCase(Locale.ROOT);
                 JSONArray sources = manifest.getJSONArray("urls");
-                Throwable configError = null;
-                for (int i = 0; i < sources.length(); i++) {
-                    try {
-                        String json = fetchText(requireHttps(sources.getString(i)), 256 * 1024);
-                        if (!expectedSha256.equals(sha256(json)))
-                            throw new SecurityException("Compatibility SHA-256 mismatch");
-                        return new CompatibilityPayload(json, expectedSha256);
-                    } catch (Throwable throwable) {
-                        configError = throwable;
-                    }
-                }
-                throw new IllegalStateException("All compatibility config CDNs failed", configError);
+                if (revision < 1 || !expectedSha256.matches("[0-9a-f]{64}")
+                        || sources.length() == 0)
+                    throw new IllegalStateException("Invalid compatibility manifest");
+                CompatibilityManifest candidate =
+                        new CompatibilityManifest(revision, expectedSha256, sources);
+                manifests.putIfAbsent(revision + ":" + expectedSha256, candidate);
             } catch (Throwable throwable) {
                 lastError = throwable;
             }
         }
-        throw new IllegalStateException("All compatibility manifest CDNs failed", lastError);
+        if (manifests.isEmpty())
+            throw new IllegalStateException("All compatibility manifest CDNs failed", lastError);
+
+        List<CompatibilityManifest> ordered = new ArrayList<>(manifests.values());
+        sortCompatibilityManifests(ordered);
+        Throwable configError = null;
+        for (CompatibilityManifest manifest : ordered) {
+            for (int i = 0; i < manifest.urls.length(); i++) {
+                try {
+                    String json = fetchText(requireHttps(manifest.urls.getString(i)),
+                            256 * 1024, 5000, 10000);
+                    if (!manifest.sha256.equals(sha256(json)))
+                        throw new SecurityException("Compatibility SHA-256 mismatch");
+                    JSONObject config = new JSONObject(json);
+                    if (config.getLong("revision") != manifest.revision)
+                        throw new SecurityException("Compatibility revision mismatch");
+                    return new CompatibilityPayload(json, manifest.sha256);
+                } catch (Throwable throwable) {
+                    configError = throwable;
+                }
+            }
+        }
+        throw new IllegalStateException("All compatibility config CDNs failed", configError);
     }
 
     private static JSONObject fetchJson(String source, int maxBytes) throws Exception {
@@ -205,7 +225,12 @@ public final class UpdateManager {
     }
 
     private static String fetchText(String source, int maxBytes) throws Exception {
-        HttpURLConnection connection = openHttps(source);
+        return fetchText(source, maxBytes, 15000, 30000);
+    }
+
+    private static String fetchText(String source, int maxBytes, int connectTimeout,
+                                    int readTimeout) throws Exception {
+        HttpURLConnection connection = openHttps(source, connectTimeout, readTimeout);
         try {
             int responseCode = connection.getResponseCode();
             if (responseCode < 200 || responseCode >= 300)
@@ -219,15 +244,25 @@ public final class UpdateManager {
 
     private UpdateInfo fetchUpdateInfo() throws Exception {
         Throwable lastError = null;
+        UpdateInfo newest = null;
         for (String source : metadataSources()) {
             try {
-                return fetchUpdateInfo(source);
+                newest = selectNewerUpdate(newest,
+                        fetchUpdateInfo(withCacheBuster(source)));
             } catch (Throwable throwable) {
                 lastError = throwable;
             }
         }
+        if (newest != null)
+            return newest;
         throw new IllegalStateException("所有更新信息源均不可用", lastError);
     }
+
+    static UpdateInfo selectNewerUpdate(UpdateInfo current, UpdateInfo candidate) {
+        return current == null || candidate.versionCode > current.versionCode
+                ? candidate : current;
+    }
+
 
     private String[] metadataSources() {
         try {
@@ -364,10 +399,17 @@ public final class UpdateManager {
     }
 
     private static HttpURLConnection openHttps(String value) throws Exception {
+        return openHttps(value, 15000, 30000);
+    }
+
+    private static HttpURLConnection openHttps(String value, int connectTimeout,
+                                               int readTimeout) throws Exception {
         URL url = new URL(requireHttps(value));
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setConnectTimeout(15000);
-        connection.setReadTimeout(30000);
+        connection.setConnectTimeout(connectTimeout);
+        connection.setReadTimeout(readTimeout);
+        connection.setUseCaches(false);
+        connection.setRequestProperty("Cache-Control", "no-cache");
         connection.setInstanceFollowRedirects(true);
         connection.setRequestProperty("Accept", "application/json, application/vnd.android.package-archive, */*");
         connection.setRequestProperty("User-Agent", "Zhiliao-UpdateClient");
@@ -378,6 +420,14 @@ public final class UpdateManager {
         if (!value.toLowerCase(Locale.ROOT).startsWith("https://"))
             throw new IllegalArgumentException("更新地址必须使用 HTTPS");
         return value;
+    }
+
+    private static String withCacheBuster(String value) {
+        return withCacheBuster(value, System.currentTimeMillis());
+    }
+
+    static String withCacheBuster(String value, long timestamp) {
+        return value + (value.contains("?") ? "&" : "?") + "t=" + timestamp;
     }
 
     private static String readText(InputStream input, int maxBytes) throws Exception {
@@ -474,6 +524,20 @@ public final class UpdateManager {
         });
     }
 
+    static void sortCompatibilityManifests(List<CompatibilityManifest> manifests) {
+        manifests.sort((left, right) -> Long.compare(right.revision, left.revision));
+    }
+    static final class CompatibilityManifest {
+        final long revision;
+        final String sha256;
+        final JSONArray urls;
+
+        CompatibilityManifest(long revision, String sha256, JSONArray urls) {
+            this.revision = revision;
+            this.sha256 = sha256;
+            this.urls = urls;
+        }
+    }
     private static final class CompatibilityPayload {
         final String json;
         final String sha256;

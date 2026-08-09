@@ -1,18 +1,25 @@
 package com.shatyuka.zhiliao.hooks;
 
+import com.shatyuka.zhiliao.CompatibilityRegistry;
+import com.shatyuka.zhiliao.DexResolver;
 import com.shatyuka.zhiliao.Helper;
 import com.shatyuka.zhiliao.xposed.XC_MethodHook;
 import com.shatyuka.zhiliao.xposed.XposedBridge;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
 
 public class AutoRefresh implements IHook {
     static Method tryRefresh;
     static Method reasonRefresh;
     static Method postRefreshSucceed;
+    static final List<Method> reasonRefreshMethods = new ArrayList<>();
 
     private static final Map<Object, Integer> initialRefreshResults = new WeakHashMap<>();
 
@@ -23,23 +30,56 @@ public class AutoRefresh implements IHook {
 
     @Override
     public void init(ClassLoader classLoader) throws Throwable {
-        try {
-            Class<?> feedFragment = classLoader.loadClass("com.zhihu.android.app.feed.ui2.feed.FeedFragment");
+        tryRefresh = null;
+        reasonRefresh = null;
+        postRefreshSucceed = null;
+        reasonRefreshMethods.clear();
+
+        Class<?> feedFragment = loadFirstClass(classLoader,
+                CompatibilityRegistry.getSymbolCandidates("AutoRefresh.feedFragmentClasses"));
+        if (feedFragment == null) {
+            try {
+                feedFragment = classLoader.loadClass(
+                        "com.zhihu.android.app.feed.ui2.feed.FeedFragment");
+            } catch (ClassNotFoundException ignored) {
+            }
+        }
+        if (feedFragment == null)
+            feedFragment = DexResolver.findClassByRule("AutoRefresh.feedFragment");
+        if (feedFragment == null)
+            feedFragment = DexResolver.findClassByMethodName("auto_refresh_feed_fragment",
+                    "com.zhihu.android.app.feed", "postRefreshSucceed");
+        if (feedFragment != null) {
+            Set<String> configuredReasonTypes = new HashSet<>(
+                    CompatibilityRegistry.getSymbolCandidates("autoRefreshReasonTypes"));
+            List<Method> structuralCandidates = new ArrayList<>();
             for (Method method : feedFragment.getDeclaredMethods()) {
                 if (method.getReturnType() == void.class
                         && method.getParameterCount() == 2
                         && method.getParameterTypes()[0] == boolean.class
-                        && method.getParameterTypes()[1].getName()
-                                .equals("com.zhihu.android.feed.delegate.m")) {
+                        && !method.getParameterTypes()[1].isPrimitive()) {
                     method.setAccessible(true);
-                    reasonRefresh = method;
+                    structuralCandidates.add(method);
+                    if (configuredReasonTypes.contains(method.getParameterTypes()[1].getName()))
+                        reasonRefreshMethods.add(method);
                 } else if (method.getName().equals("postRefreshSucceed")
                         && method.getParameterCount() == 1) {
                     method.setAccessible(true);
                     postRefreshSucceed = method;
                 }
             }
-        } catch (ClassNotFoundException ignored) {
+            if (reasonRefreshMethods.isEmpty()) {
+                // Kotlin commonly emits an outer delegate and an inner implementation with the
+                // same (fromUser, refreshType) signature, so every validated wrapper is hooked.
+                for (Method method : structuralCandidates) {
+                    Class<?> reasonType = method.getParameterTypes()[1];
+                    if (reasonType.isInterface() || reasonType.isEnum()
+                            || Modifier.isAbstract(reasonType.getModifiers()))
+                        reasonRefreshMethods.add(method);
+                }
+            }
+            if (!reasonRefreshMethods.isEmpty())
+                reasonRefresh = reasonRefreshMethods.get(0);
         }
 
         try {
@@ -57,8 +97,8 @@ public class AutoRefresh implements IHook {
             return;
         }
 
-        if (reasonRefresh != null) {
-            XposedBridge.hookMethod(reasonRefresh, new XC_MethodHook() {
+        for (Method refreshBoundary : reasonRefreshMethods) {
+            XposedBridge.hookMethod(refreshBoundary, new XC_MethodHook() {
                 @Override
                 protected void beforeHookedMethod(MethodHookParam param) {
                     markRefreshStarted(param.thisObject, (boolean) param.args[0]);
@@ -109,6 +149,15 @@ public class AutoRefresh implements IHook {
         }
     }
 
+    private static Class<?> loadFirstClass(ClassLoader classLoader, List<String> candidates) {
+        for (String candidate : candidates) {
+            try {
+                return classLoader.loadClass(candidate);
+            } catch (ClassNotFoundException ignored) {
+            }
+        }
+        return null;
+    }
     private boolean findTryRefreshMethod(Class<?> clazz) {
         for (Method method : clazz.getDeclaredMethods()) {
             if (method.getReturnType() == void.class
