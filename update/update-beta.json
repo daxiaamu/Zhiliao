@@ -1,18 +1,18 @@
 {
   "schemaVersion": 1,
-  "versionCode": 2026080903,
-  "versionName": "26.08.09-beta.3",
-  "url": "https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.09-beta.3/Zhiliao_26.08.09-beta.3.apk",
+  "versionCode": 2026081004,
+  "versionName": "26.08.10-beta.4",
+  "url": "https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.10-beta.4/Zhiliao_26.08.10-beta.4.apk",
   "urls": [
-    "https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.09-beta.3/Zhiliao_26.08.09-beta.3.apk",
-    "https://ghfast.top/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.09-beta.3/Zhiliao_26.08.09-beta.3.apk",
-    "https://gh-proxy.com/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.09-beta.3/Zhiliao_26.08.09-beta.3.apk",
-    "https://ghproxy.net/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.09-beta.3/Zhiliao_26.08.09-beta.3.apk",
-    "https://gh.llkk.cc/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.09-beta.3/Zhiliao_26.08.09-beta.3.apk",
-    "https://ghp.keleyaa.com/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.09-beta.3/Zhiliao_26.08.09-beta.3.apk",
-    "https://gh.monlor.com/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.09-beta.3/Zhiliao_26.08.09-beta.3.apk"
+    "https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.10-beta.4/Zhiliao_26.08.10-beta.4.apk",
+    "https://ghfast.top/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.10-beta.4/Zhiliao_26.08.10-beta.4.apk",
+    "https://gh-proxy.com/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.10-beta.4/Zhiliao_26.08.10-beta.4.apk",
+    "https://ghproxy.net/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.10-beta.4/Zhiliao_26.08.10-beta.4.apk",
+    "https://gh.llkk.cc/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.10-beta.4/Zhiliao_26.08.10-beta.4.apk",
+    "https://ghp.keleyaa.com/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.10-beta.4/Zhiliao_26.08.10-beta.4.apk",
+    "https://gh.monlor.com/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.10-beta.4/Zhiliao_26.08.10-beta.4.apk"
   ],
-  "sha256": "a9fc16e64ca9d1a4a65bc2993fcbf9c215c29244755cadfe29e7aa8638c7bc10",
-  "changelog": "本预发布版修复“禁止自动刷新”在冷启动场景下仍被新内容覆盖的问题。\n\n- 冷启动时保留知乎恢复的上次信息流内容\n- 抑制随后到达并覆盖缓存的自动网络结果\n- 无缓存时仍允许首份网络结果正常显示，避免空白信息流\n- 保留手动刷新、首页回顶刷新和信息流分页加载\n- 继续阻止应用从后台返回前台时的定时自动刷新\n- 国内版知乎 11.4.0 完成冷启动前后对比、手动刷新及连续分页真机测试\n- targetSdk/compileSdk 37，LSPosed API 102\n\nAPK SHA-256: a9fc16e64ca9d1a4a65bc2993fcbf9c215c29244755cadfe29e7aa8638c7bc10\n",
-  "publishedAt": "2026-08-09T05:21:19Z"
+  "sha256": "b3a892313a4fe19e5245d1a6f3d6fae64a40f06f07eba83696b447da1768254f",
+  "changelog": "本次预发布重点提升未知知乎版本和远程兼容配置的适配能力。\n\n- 新增受限声明式 DexKit 云配规则：支持类、方法、字段、参数/返回类型、字符串常量和调用关系。\n- 增加按功能远程停用开关；候选歧义时安全跳过 Hook。\n- DexKit 结果按知乎 versionCode、APK 指纹和云配 revision 缓存。\n- 修复多 CDN 被首个过期 manifest/更新 JSON 短路的问题，改为选择最新 revision/versionCode。\n- 云配失败时 Banner 提供重载按钮，二次确认后重启知乎；失败原因细分显示。\n- AutoRefresh 同时覆盖国内版 11.4.0（40408）和 Play 10.95.0（29522）。\n\n验证：单元测试、Android Lint、Release Lint、国内版/Play 版真实 DEX 全 Hook 测试、真机云配重载与知乎 PID 重启均通过。\n\nAPK SHA-256：B3A892313A4FE19E5245D1A6F3D6FAE64A40F06F07EBA83696B447DA1768254F",
+  "publishedAt": "2026-08-09T18:58:57Z"
 }
