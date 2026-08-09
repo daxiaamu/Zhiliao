@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "revision": 2026080901,
+  "revision": 2026080902,
   "targetPackage": "com.zhihu.android",
   "compatibilityUrl": "https://pan.quark.cn/s/4f43a6eab295",
   "defaults": {
@@ -27,6 +27,9 @@
       "maxVersionCode": 40408,
       "status": "adapted",
       "symbols": {
+        "autoRefreshReasonTypes": [
+          "com.zhihu.android.feed.delegate.m"
+        ],
         "cashEntryMethods": [
           "Ok"
         ]
@@ -41,6 +44,9 @@
       "maxVersionCode": 29522,
       "status": "adapted",
       "symbols": {
+        "autoRefreshReasonTypes": [
+          "g40.k"
+        ],
         "searchResponseConverters": [
           "retrofit2.converter.jackson.c"
         ]
