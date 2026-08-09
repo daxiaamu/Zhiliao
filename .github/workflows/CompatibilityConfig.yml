@@ -5,6 +5,7 @@ on:
     branches: [master]
     paths:
       - update/compatibility-v1.json
+      - .github/workflows/CompatibilityConfig.yml
 
 permissions:
   contents: write
@@ -37,17 +38,18 @@ jobs:
           jq -n \
             --argjson revision "$revision" \
             --arg sha256 "$sha256" \
+            --arg ref "$GITHUB_SHA" \
             '{
               schemaVersion: 1,
               revision: $revision,
               sha256: $sha256,
               urls: [
-                "https://raw.githubusercontent.com/daxiaamu/Zhiliao/master/update/compatibility-v1.json",
-                "https://cdn.jsdelivr.net/gh/daxiaamu/Zhiliao@master/update/compatibility-v1.json",
-                "https://fastly.jsdelivr.net/gh/daxiaamu/Zhiliao@master/update/compatibility-v1.json",
-                "https://gcore.jsdelivr.net/gh/daxiaamu/Zhiliao@master/update/compatibility-v1.json",
-                "https://testingcf.jsdelivr.net/gh/daxiaamu/Zhiliao@master/update/compatibility-v1.json",
-                "https://cdn.statically.io/gh/daxiaamu/Zhiliao/master/update/compatibility-v1.json"
+                ("https://raw.githubusercontent.com/daxiaamu/Zhiliao/" + $ref + "/update/compatibility-v1.json"),
+                ("https://cdn.jsdelivr.net/gh/daxiaamu/Zhiliao@" + $ref + "/update/compatibility-v1.json"),
+                ("https://fastly.jsdelivr.net/gh/daxiaamu/Zhiliao@" + $ref + "/update/compatibility-v1.json"),
+                ("https://gcore.jsdelivr.net/gh/daxiaamu/Zhiliao@" + $ref + "/update/compatibility-v1.json"),
+                ("https://testingcf.jsdelivr.net/gh/daxiaamu/Zhiliao@" + $ref + "/update/compatibility-v1.json"),
+                ("https://cdn.statically.io/gh/daxiaamu/Zhiliao/" + $ref + "/update/compatibility-v1.json")
               ]
             }' > update/compatibility-manifest.json
 
@@ -61,3 +63,10 @@ jobs:
           fi
           git commit -m "Update compatibility manifest [skip ci]"
           git push origin HEAD:master
+
+      - name: Purge mutable CDN aliases for older clients
+        run: |
+          curl --fail --location --retry 3 \
+            "https://purge.jsdelivr.net/gh/daxiaamu/Zhiliao@master/update/compatibility-manifest.json"
+          curl --fail --location --retry 3 \
+            "https://purge.jsdelivr.net/gh/daxiaamu/Zhiliao@master/update/compatibility-v1.json"

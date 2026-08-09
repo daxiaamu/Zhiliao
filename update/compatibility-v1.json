@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "revision": 2026080902,
+  "revision": 2026081001,
   "targetPackage": "com.zhihu.android",
   "compatibilityUrl": "https://pan.quark.cn/s/4f43a6eab295",
   "defaults": {
@@ -15,6 +15,20 @@
         "retrofit2.p.a.c",
         "j.b.a.c"
       ]
+    },
+    "dexRules": {
+      "AutoRefresh.feedFragment": {
+        "result": "ownerClass",
+        "searchPackages": [
+          "com.zhihu.android.app.feed"
+        ],
+        "methodNames": [
+          "postRefreshSucceed"
+        ],
+        "paramCount": 1,
+        "minCandidates": 1,
+        "maxCandidates": 1
+      }
     }
   },
   "profiles": [
