@@ -48,4 +48,21 @@ class SimpleMarkdownTest {
             blocks.map { it.kind },
         )
     }
+
+    @Test
+    fun keepsEveryBlockInLongReleaseNotes() {
+        val markdown = buildString {
+            appendLine("## Changes")
+            repeat(80) { index ->
+                appendLine("- Item **${index + 1}** with `code`")
+            }
+        }
+
+        val blocks = parseMarkdownBlocks(markdown)
+
+        assertEquals(81, blocks.size)
+        assertEquals(MarkdownBlockKind.HEADING_2, blocks.first().kind)
+        assertEquals(80, blocks.count { it.kind == MarkdownBlockKind.BULLET })
+        assertEquals("Item **80** with `code`", blocks.last().text)
+    }
 }

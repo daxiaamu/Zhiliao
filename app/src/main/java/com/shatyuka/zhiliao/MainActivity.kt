@@ -731,23 +731,27 @@ class MainActivity : ComponentActivity() {
             icon = { Icon(painterResource(R.drawable.ic_cicada_outline), contentDescription = null) },
             title = { Text(stringResource(R.string.update_dialog_title)) },
             text = {
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text(
-                        buildString {
-                            append(getString(R.string.new_version_format, info.versionName))
-                            if (info.publishedAt.isNotEmpty()) {
-                                append('\n').append(
-                                    getString(R.string.published_at_format, info.publishedAt),
-                                )
-                            }
-                        },
-                    )
-                    SimpleMarkdownText(
-                        markdown = info.changelog,
-                        modifier = Modifier
-                            .heightIn(max = 320.dp)
-                            .verticalScroll(rememberScrollState()),
-                    )
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 420.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    item {
+                        Text(
+                            buildString {
+                                append(getString(R.string.new_version_format, info.versionName))
+                                if (info.publishedAt.isNotEmpty()) {
+                                    append('\n').append(
+                                        getString(R.string.published_at_format, info.publishedAt),
+                                    )
+                                }
+                            },
+                        )
+                    }
+                    item {
+                        SimpleMarkdownText(markdown = info.changelog)
+                    }
                 }
             },
             confirmButton = {
