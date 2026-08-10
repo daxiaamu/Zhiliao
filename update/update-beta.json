@@ -1,18 +1,18 @@
 {
   "schemaVersion": 1,
-  "versionCode": 2026081102,
-  "versionName": "26.08.11-beta.2",
-  "url": "https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.11-beta.2/Zhiliao_26.08.11-beta.2.apk",
+  "versionCode": 2026081103,
+  "versionName": "26.08.11-beta.3",
+  "url": "https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.11-beta.3/Zhiliao_26.08.11-beta.3.apk",
   "urls": [
-    "https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.11-beta.2/Zhiliao_26.08.11-beta.2.apk",
-    "https://ghfast.top/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.11-beta.2/Zhiliao_26.08.11-beta.2.apk",
-    "https://gh-proxy.com/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.11-beta.2/Zhiliao_26.08.11-beta.2.apk",
-    "https://ghproxy.net/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.11-beta.2/Zhiliao_26.08.11-beta.2.apk",
-    "https://gh.llkk.cc/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.11-beta.2/Zhiliao_26.08.11-beta.2.apk",
-    "https://ghp.keleyaa.com/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.11-beta.2/Zhiliao_26.08.11-beta.2.apk",
-    "https://gh.monlor.com/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.11-beta.2/Zhiliao_26.08.11-beta.2.apk"
+    "https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.11-beta.3/Zhiliao_26.08.11-beta.3.apk",
+    "https://ghfast.top/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.11-beta.3/Zhiliao_26.08.11-beta.3.apk",
+    "https://gh-proxy.com/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.11-beta.3/Zhiliao_26.08.11-beta.3.apk",
+    "https://ghproxy.net/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.11-beta.3/Zhiliao_26.08.11-beta.3.apk",
+    "https://gh.llkk.cc/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.11-beta.3/Zhiliao_26.08.11-beta.3.apk",
+    "https://ghp.keleyaa.com/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.11-beta.3/Zhiliao_26.08.11-beta.3.apk",
+    "https://gh.monlor.com/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.11-beta.3/Zhiliao_26.08.11-beta.3.apk"
   ],
-  "sha256": "22192e186d67905d85f8ec0af985ee9880f8cb57e875e87cc9466770f7ea0926",
-  "changelog": "## 26.08.11-beta.2\n\n- 修复较长更新日志在弹窗中显示不完整的问题。\n- 更新信息改为单一有界滚动区域，版本、发布时间与更新正文可整体滚动。\n- 下载并安装、跳过此版本、忽略按钮固定在弹窗底部。\n- 支持简单 Markdown：标题、项目列表、编号列表、粗体、斜体、行内代码、代码块、引用、分割线和链接。\n\n## 26.08.11-beta.1\n\n- 彻底移除知乎设置页中的“知了设置”入口，统一通过知了独立 APP 管理模块设置。\n- 删除相关设置页 Hook，避免干预知乎原生 RecyclerView 和 Preference 列表。\n- 修复知乎设置项被截断或缺失的问题，保留账号、隐私、关于等完整原生设置。\n\n## 验证\n\n- 使用真实 beta.1 长更新日志真机验证，Markdown 标题和列表正确渲染，滑动后可显示日志末尾 SHA-256 内容。\n- 单元测试、Release 构建与 Android Lint 通过。\n- OnePlus 9R 真机安装启动通过，targetSdk 37。\n- APK SHA-256：`22192E186D67905D85F8EC0AF985EE9880F8CB57E875E87CC9466770F7EA0926`\n- 正式证书 SHA-256：`A3278D7A7A11754FE8D8042A0E2666CAEF60505DBD97DB7A1127B88BB622C7F9`",
-  "publishedAt": "2026-08-10T23:04:06Z"
+  "sha256": "11219b36d5c08026622b59e1afcd5fd69e9d35a7548428c0284baf35c94b8ed0",
+  "changelog": "## 26.08.11-beta.3\n\n- 修复手动检查更新错误复用自动检查会话缓存、点击后瞬间提示“已是最新版”的问题。\n- 手动检查现在始终重新请求多个更新源；自动检查仍可复用当前会话结果。\n- 自动检查尚未完成时，手动检查加入同一个进行中请求，避免重复联网和重复弹窗。\n\n## 26.08.11-beta.2\n\n- 修复较长更新日志在弹窗中显示不完整的问题。\n- 更新信息改为单一有界滚动区域，版本、发布时间与更新正文可整体滚动，操作按钮固定在底部。\n- 支持简单 Markdown：标题、项目列表、编号列表、粗体、斜体、行内代码、代码块、引用、分割线和链接。\n\n## 26.08.11-beta.1\n\n- 彻底移除知乎设置页中的“知了设置”入口，统一通过知了独立 APP 管理模块设置。\n- 删除相关设置页 Hook，避免干预知乎原生 RecyclerView 和 Preference 列表。\n- 修复知乎设置项被截断或缺失的问题，保留账号、隐私、关于等完整原生设置。\n\n## 验证\n\n- 真机确认自动检查已有缓存后，手动检查仍显示网络检查进度并在完成后恢复按钮。\n- 使用真实长更新日志验证 Markdown 渲染和滚动至日志末尾。\n- 单元测试、Release 构建与 Android Lint 通过。\n- OnePlus 9R 真机安装启动通过，targetSdk 37。\n- APK SHA-256：`11219B36D5C08026622B59E1AFCD5FD69E9D35A7548428C0284BAF35C94B8ED0`\n- 正式证书 SHA-256：`A3278D7A7A11754FE8D8042A0E2666CAEF60505DBD97DB7A1127B88BB622C7F9`",
+  "publishedAt": "2026-08-10T23:20:21Z"
 }
