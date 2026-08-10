@@ -37,7 +37,6 @@ import com.shatyuka.zhiliao.hooks.TemplateAdView;
 import com.shatyuka.zhiliao.hooks.ThirdPartyLogin;
 import com.shatyuka.zhiliao.hooks.VIPBanner;
 import com.shatyuka.zhiliao.hooks.WebView;
-import com.shatyuka.zhiliao.hooks.ZhihuSettingsEntry;
 import com.shatyuka.zhiliao.xposed.XposedBridge;
 
 public class Hooks {
@@ -73,7 +72,6 @@ public class Hooks {
             new FollowButton(),
             new FullScreen(),
             new AutoRefresh(),
-            new ZhihuSettingsEntry(),
     };
 
     public static void init(final ClassLoader classLoader) {

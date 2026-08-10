@@ -28,7 +28,6 @@ import com.shatyuka.zhiliao.hooks.Tag;
 import com.shatyuka.zhiliao.hooks.TemplateAdView;
 import com.shatyuka.zhiliao.hooks.ThirdPartyLogin;
 import com.shatyuka.zhiliao.hooks.VIPBanner;
-import com.shatyuka.zhiliao.hooks.ZhihuSettingsEntry;
 
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
@@ -205,11 +204,6 @@ public class HookTest {
     @Test
     public void templateAdViewTest() {
         checkHook(new TemplateAdView(), 29522);
-    }
-
-    @Test
-    public void zhihuSettingsEntryTest() {
-        checkHook(new ZhihuSettingsEntry(), 29522);
     }
 
     @Test
