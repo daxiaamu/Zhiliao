@@ -21,9 +21,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.OpenInNew
 import androidx.compose.material.icons.outlined.Download
@@ -50,12 +52,15 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -67,6 +72,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import com.shatyuka.zhiliao.update.UpdateInfo
 import com.shatyuka.zhiliao.update.UpdateManager
+import com.shatyuka.zhiliao.ui.SimpleMarkdownText
 import java.io.File
 import java.util.regex.Pattern
 import java.util.regex.PatternSyntaxException
@@ -164,6 +170,13 @@ class MainActivity : ComponentActivity() {
                 onSurfaceVariant = onSurfaceVariant,
             )
         }
+        val listState = rememberLazyListState()
+        val updateCardIndex = 15 + HOOK_GROUPS.size * 2
+        LaunchedEffect(downloadProgress != NOT_DOWNLOADING) {
+            if (downloadProgress != NOT_DOWNLOADING) {
+                listState.animateScrollToItem(updateCardIndex)
+            }
+        }
         MaterialTheme(colorScheme = scheme) {
             Scaffold(
                 containerColor = background,
@@ -183,6 +196,7 @@ class MainActivity : ComponentActivity() {
                 },
             ) { insets ->
                 LazyColumn(
+                    state = listState,
                     modifier = Modifier.fillMaxSize().padding(insets),
                     contentPadding = PaddingValues(horizontal = 18.dp, vertical = 12.dp),
                     verticalArrangement = Arrangement.spacedBy(14.dp),
@@ -717,13 +731,24 @@ class MainActivity : ComponentActivity() {
             icon = { Icon(painterResource(R.drawable.ic_cicada_outline), contentDescription = null) },
             title = { Text(stringResource(R.string.update_dialog_title)) },
             text = {
-                Text(
-                    buildString {
-                        append(getString(R.string.new_version_format, info.versionName))
-                        if (info.publishedAt.isNotEmpty()) append('\n').append(getString(R.string.published_at_format, info.publishedAt))
-                        append("\n\n").append(info.changelog)
-                    },
-                )
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text(
+                        buildString {
+                            append(getString(R.string.new_version_format, info.versionName))
+                            if (info.publishedAt.isNotEmpty()) {
+                                append('\n').append(
+                                    getString(R.string.published_at_format, info.publishedAt),
+                                )
+                            }
+                        },
+                    )
+                    SimpleMarkdownText(
+                        markdown = info.changelog,
+                        modifier = Modifier
+                            .heightIn(max = 320.dp)
+                            .verticalScroll(rememberScrollState()),
+                    )
+                }
             },
             confirmButton = {
                 Button(onClick = {

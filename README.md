@@ -2,30 +2,35 @@
   <img src="docs/icon.svg" width="128" height="128" alt="知了项目图标">
 </p>
 
-# 知了
+<p align="center">
+  <a href="https://github.com/daxiaamu/Zhiliao/actions/workflows/AndroidCI.yml"><img src="https://github.com/daxiaamu/Zhiliao/actions/workflows/AndroidCI.yml/badge.svg" alt="Android CI"></a>
+  <a href="https://github.com/daxiaamu/Zhiliao/actions/workflows/ZhihuCompatibility.yml"><img src="https://github.com/daxiaamu/Zhiliao/actions/workflows/ZhihuCompatibility.yml/badge.svg" alt="Zhihu version sentinel"></a>
+  <a href="https://github.com/daxiaamu/Zhiliao/actions/workflows/CompatibilityConfig.yml"><img src="https://github.com/daxiaamu/Zhiliao/actions/workflows/CompatibilityConfig.yml/badge.svg" alt="Compatibility config"></a>
+  <a href="https://github.com/daxiaamu/Zhiliao/actions/workflows/UpdateJson.yml"><img src="https://github.com/daxiaamu/Zhiliao/actions/workflows/UpdateJson.yml/badge.svg" alt="Update metadata"></a>
+  <br>
+  <a href="https://github.com/daxiaamu/Zhiliao/releases"><img src="https://img.shields.io/github/v/release/daxiaamu/Zhiliao?include_prereleases&amp;label=Release" alt="Release"></a>
+  <a href="https://github.com/daxiaamu/Zhiliao/releases"><img src="https://img.shields.io/github/downloads/daxiaamu/Zhiliao/total?label=Downloads" alt="Downloads"></a>
+  <a href="LICENSE.md"><img src="https://img.shields.io/github/license/daxiaamu/Zhiliao?label=License" alt="License"></a>
+  <a href="https://github.com/daxiaamu/Zhiliao/stargazers"><img src="https://img.shields.io/github/stars/daxiaamu/Zhiliao?style=flat&amp;label=Stars" alt="Stars"></a>
+  <a href="https://github.com/daxiaamu/Zhiliao/forks"><img src="https://img.shields.io/github/forks/daxiaamu/Zhiliao?style=flat&amp;label=Forks" alt="Forks"></a>
+  <br>
+  <a href="https://github.com/daxiaamu/Zhiliao/issues"><img src="https://img.shields.io/github/issues/daxiaamu/Zhiliao?label=Issues" alt="Issues"></a>
+  <a href="https://github.com/daxiaamu/Zhiliao/pulls"><img src="https://img.shields.io/github/issues-pr/daxiaamu/Zhiliao?label=Pull%20requests" alt="Pull requests"></a>
+  <a href="https://github.com/daxiaamu/Zhiliao/commits/master"><img src="https://img.shields.io/github/last-commit/daxiaamu/Zhiliao?label=Last%20commit" alt="Last commit"></a>
+  <a href="https://github.com/daxiaamu/Zhiliao"><img src="https://img.shields.io/github/repo-size/daxiaamu/Zhiliao?label=Repo%20size" alt="Repo size"></a>
+  <br>
+  <a href="#运行要求"><img src="https://img.shields.io/badge/Android-8.0%2B-3DDC84?logo=android&amp;logoColor=white" alt="Android 8.0+"></a>
+  <a href="#运行要求"><img src="https://img.shields.io/badge/targetSdk-37-3DDC84?logo=android&amp;logoColor=white" alt="Target API 37"></a>
+  <a href="#运行要求"><img src="https://img.shields.io/badge/LSPosed%20API-102-4A90E2" alt="LSPosed API 102"></a>
+  <a href="#本地构建"><img src="https://img.shields.io/badge/Java-17-ED8B00?logo=openjdk&amp;logoColor=white" alt="Java 17"></a>
+</p>
 
-少一点打扰，多一点内容。
+<div align="center">
+  <h1>知了</h1>
+  <p>少一点打扰，多一点内容。</p>
+</div>
 
 知了是面向知乎 Android 客户端的 LSPosed/Xposed 模块，用于移除广告、精简界面并改善部分交互体验。项目同时维护国内版与 Google Play 版适配，并通过远程兼容配置和 DexKit 回退提高对未知版本的适应能力。
-
-[![Android CI](https://github.com/daxiaamu/Zhiliao/actions/workflows/AndroidCI.yml/badge.svg)](https://github.com/daxiaamu/Zhiliao/actions/workflows/AndroidCI.yml)
-[![Zhihu version sentinel](https://github.com/daxiaamu/Zhiliao/actions/workflows/ZhihuCompatibility.yml/badge.svg)](https://github.com/daxiaamu/Zhiliao/actions/workflows/ZhihuCompatibility.yml)
-[![Compatibility config](https://github.com/daxiaamu/Zhiliao/actions/workflows/CompatibilityConfig.yml/badge.svg)](https://github.com/daxiaamu/Zhiliao/actions/workflows/CompatibilityConfig.yml)
-[![Update metadata](https://github.com/daxiaamu/Zhiliao/actions/workflows/UpdateJson.yml/badge.svg)](https://github.com/daxiaamu/Zhiliao/actions/workflows/UpdateJson.yml)
-[![Release](https://img.shields.io/github/v/release/daxiaamu/Zhiliao?include_prereleases&label=Release)](https://github.com/daxiaamu/Zhiliao/releases)
-[![Downloads](https://img.shields.io/github/downloads/daxiaamu/Zhiliao/total?label=Downloads)](https://github.com/daxiaamu/Zhiliao/releases)
-[![License](https://img.shields.io/github/license/daxiaamu/Zhiliao?label=License)](LICENSE.md)
-[![Stars](https://img.shields.io/github/stars/daxiaamu/Zhiliao?style=flat&label=Stars)](https://github.com/daxiaamu/Zhiliao/stargazers)
-[![Forks](https://img.shields.io/github/forks/daxiaamu/Zhiliao?style=flat&label=Forks)](https://github.com/daxiaamu/Zhiliao/forks)
-[![Issues](https://img.shields.io/github/issues/daxiaamu/Zhiliao?label=Issues)](https://github.com/daxiaamu/Zhiliao/issues)
-[![Pull requests](https://img.shields.io/github/issues-pr/daxiaamu/Zhiliao?label=Pull%20requests)](https://github.com/daxiaamu/Zhiliao/pulls)
-[![Last commit](https://img.shields.io/github/last-commit/daxiaamu/Zhiliao?label=Last%20commit)](https://github.com/daxiaamu/Zhiliao/commits/master)
-[![Repo size](https://img.shields.io/github/repo-size/daxiaamu/Zhiliao?label=Repo%20size)](https://github.com/daxiaamu/Zhiliao)
-[![Android](https://img.shields.io/badge/Android-8.0%2B-3DDC84?logo=android&logoColor=white)](#运行要求)
-[![Target API](https://img.shields.io/badge/targetSdk-37-3DDC84?logo=android&logoColor=white)](#运行要求)
-[![LSPosed API](https://img.shields.io/badge/LSPosed%20API-102-4A90E2)](#运行要求)
-[![Java](https://img.shields.io/badge/Java-17-ED8B00?logo=openjdk&logoColor=white)](#本地构建)
-
 > 本项目仅用于学习、研究和改善个人使用体验，与知乎无关。请遵守所在地法律法规及知乎服务协议。
 
 ## 主要功能
