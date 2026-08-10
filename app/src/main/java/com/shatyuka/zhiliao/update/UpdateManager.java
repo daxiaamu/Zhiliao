@@ -108,15 +108,21 @@ public final class UpdateManager {
         return instance;
     }
 
-    /** Manual and automatic callers share both the in-flight request and its session result. */
+    /** Automatic callers may reuse the session result; all callers share an in-flight request. */
     public synchronized void check(CheckCallback callback) {
-        if (sessionResult != null) {
+        check(false, callback);
+    }
+
+    public synchronized void check(boolean forceRefresh, CheckCallback callback) {
+        if (checking) {
+            checkCallbacks.add(callback);
+            return;
+        }
+        if (shouldReuseSessionResult(forceRefresh, checking, sessionResult)) {
             postCheck(callback, sessionResult, null);
             return;
         }
         checkCallbacks.add(callback);
-        if (checking)
-            return;
         checking = true;
         executor.execute(() -> {
             UpdateInfo info = null;
@@ -128,6 +134,11 @@ public final class UpdateManager {
             }
             finishCheck(info, error);
         });
+    }
+
+    static boolean shouldReuseSessionResult(boolean forceRefresh, boolean checking,
+                                            UpdateInfo sessionResult) {
+        return !forceRefresh && !checking && sessionResult != null;
     }
 
     public synchronized boolean claimAutomaticPrompt(long versionCode) {

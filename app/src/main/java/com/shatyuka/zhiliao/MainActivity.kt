@@ -778,7 +778,7 @@ class MainActivity : ComponentActivity() {
     private fun checkForUpdates(manual: Boolean) {
         if (checking) return
         checking = true
-        updateManager.check { info, error ->
+        updateManager.check(manual) { info, error ->
             checking = false
             if (error != null) {
                 if (manual) errorMessage = getString(R.string.check_update_failed, error.message ?: error.toString())

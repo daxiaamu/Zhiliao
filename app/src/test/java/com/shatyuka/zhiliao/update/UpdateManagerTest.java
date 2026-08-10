@@ -13,6 +13,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class UpdateManagerTest {
     @Rule
@@ -48,6 +50,17 @@ public class UpdateManagerTest {
 
         assertEquals(11, selected.versionCode);
         assertEquals("new", selected.versionName);
+    }
+    @Test
+    public void manualCheckNeverReusesCompletedSessionResult() {
+        UpdateInfo cached = new UpdateInfo(
+                2, "cached", "https://example.com/module.apk",
+                "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "notes", "");
+
+        assertTrue(UpdateManager.shouldReuseSessionResult(false, false, cached));
+        assertFalse(UpdateManager.shouldReuseSessionResult(true, false, cached));
+        assertFalse(UpdateManager.shouldReuseSessionResult(false, true, cached));
     }
     @Test
     public void compatibilityManifestHasSixCdnSources() {
