@@ -13,6 +13,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
@@ -602,11 +603,19 @@ class MainActivity : ComponentActivity() {
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
-                if (checking) {
-                    CircularProgressIndicator(Modifier.size(24.dp), strokeWidth = 2.dp)
-                } else {
-                    TextButton(onClick = { checkForUpdates(manual = true) }) {
-                        Text(stringResource(R.string.check_now))
+                Box(
+                    modifier = Modifier.size(width = 64.dp, height = 48.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    if (checking) {
+                        CircularProgressIndicator(Modifier.size(24.dp), strokeWidth = 2.dp)
+                    } else {
+                        TextButton(
+                            onClick = { checkForUpdates(manual = true) },
+                            modifier = Modifier.fillMaxSize(),
+                        ) {
+                            Text(stringResource(R.string.check_now))
+                        }
                     }
                 }
             }

@@ -23,4 +23,19 @@ class UpdateDialogLayoutTest {
         assertTrue(dialog.contains("SimpleMarkdownText(markdown = info.changelog)"))
         assertFalse(dialog.contains("verticalScroll("))
     }
+
+    @Test
+    fun updateCardKeepsTrailingSlotSizeWhileChecking() {
+        val source = Files.readString(
+            File("src/main/java/com/shatyuka/zhiliao/MainActivity.kt").toPath(),
+            StandardCharsets.UTF_8,
+        )
+        val start = source.indexOf("private fun UpdateCard()")
+        val end = source.indexOf("private fun AboutCard", start)
+        val card = source.substring(start, end)
+
+        assertTrue(card.contains("Modifier.size(width = 64.dp, height = 48.dp)"))
+        assertTrue(card.contains("modifier = Modifier.fillMaxSize()"))
+        assertTrue(card.contains("CircularProgressIndicator(Modifier.size(24.dp)"))
+    }
 }
