@@ -707,13 +707,9 @@ class MainActivity : ComponentActivity() {
             title = { Text(stringResource(R.string.compatibility_title)) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    compatibilityEntries.forEach { entry ->
-                        val versions = if (entry.minVersionCode == entry.maxVersionCode) {
-                            entry.minVersionCode.toString()
-                        } else {
-                            "${entry.minVersionCode}–${entry.maxVersionCode}"
-                        }
-                        Text("${entry.displayName}：${entry.versionName}（$versions）")
+                    compatibilityEntries.groupBy { it.displayName }.forEach { (displayName, entries) ->
+                        val versions = entries.map { it.versionName }.distinct().joinToString("、")
+                        Text("$displayName：$versions")
                     }
                 }
             },
