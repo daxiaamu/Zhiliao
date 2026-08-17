@@ -40,8 +40,15 @@ public class CompatibilityRegistryTest {
     @Test
     public void catalogDrivesAdaptedVersionDialog() throws Exception {
         initialize(40408);
-        assertEquals(2, CompatibilityRegistry.getAdaptedVersions().size());
+        assertEquals(3, CompatibilityRegistry.getAdaptedVersions().size());
         assertEquals("\u56fd\u5185\u7248", CompatibilityRegistry.getAdaptedVersions().get(0).displayName);
+        assertEquals("11.4.0", CompatibilityRegistry.getAdaptedVersions().get(0).versionName);
+        assertEquals(40408, CompatibilityRegistry.getAdaptedVersions().get(0).minVersionCode);
+        assertEquals("Google Play \u7248", CompatibilityRegistry.getAdaptedVersions().get(1).displayName);
+        assertEquals("10.95.0", CompatibilityRegistry.getAdaptedVersions().get(1).versionName);
+        assertEquals("\u56fd\u5185\u7248", CompatibilityRegistry.getAdaptedVersions().get(2).displayName);
+        assertEquals("11.5.0", CompatibilityRegistry.getAdaptedVersions().get(2).versionName);
+        assertEquals(40530, CompatibilityRegistry.getAdaptedVersions().get(2).minVersionCode);
         assertEquals("https://pan.quark.cn/s/4f43a6eab295",
                 CompatibilityRegistry.getCompatibilityUrl());
     }
