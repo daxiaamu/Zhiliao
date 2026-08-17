@@ -708,7 +708,15 @@ class MainActivity : ComponentActivity() {
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     compatibilityEntries.groupBy { it.displayName }.forEach { (displayName, entries) ->
-                        val versions = entries.map { it.versionName }.distinct().joinToString("、")
+                        val versions = entries.distinctBy { it.versionName to it.minVersionCode }
+                            .joinToString("、") { entry ->
+                                val codes = if (entry.minVersionCode == entry.maxVersionCode) {
+                                    entry.minVersionCode.toString()
+                                } else {
+                                    "${entry.minVersionCode}–${entry.maxVersionCode}"
+                                }
+                                "${entry.versionName}（$codes）"
+                            }
                         Text("$displayName：$versions")
                     }
                 }
