@@ -81,6 +81,7 @@
 
 | 渠道 | 版本 | versionCode | 状态 |
 | --- | --- | ---: | --- |
+| 国内版 | 11.5.0 | 40530 | 已适配 |
 | 国内版 | 11.4.0 | 40408 | 已适配 |
 | Google Play 版 | 10.95.0 | 29522 | 已适配 |
 
@@ -192,6 +193,10 @@ Windows 使用：
 本项目延续自 [Shatyuka/Zhiliao](https://github.com/shatyuka/Zhiliao)。感谢原作者 Shatyuka 和所有贡献者留下的工作。
 
 当前维护只是维护者一时的头脑发热，原作者长期以来的贡献才是真正的“为人民服务”。恳请大家在能力范围内给原作者捐赠：[前往 Shatyuka 的捐赠页](https://github.com/shatyuka/Zhiliao/wiki/Donate)。
+
+## 推荐
+
+[机场推荐：白月光，稳定高速](https://www.sibker.com/register?invite_code=2XQR1UUz)
 
 ## License
 
