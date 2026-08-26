@@ -66,7 +66,9 @@ public class Helper {
             prefs = remotePreferences;
             packageInfo = context.getPackageManager().getPackageInfo("com.zhihu.android", 0);
             versionCode = packageInfo.versionCode;
-            CompatibilityRegistry.initialize(modRes, prefs, versionCode);
+            String channel = packageInfo.applicationInfo != null
+                    && packageInfo.applicationInfo.splitSourceDirs != null ? "play" : "domestic";
+            CompatibilityRegistry.initialize(modRes, prefs, versionCode, channel);
             DexResolver.open(hostApkPath, classLoader, prefs, versionCode);
             initSharedClasses(classLoader);
 

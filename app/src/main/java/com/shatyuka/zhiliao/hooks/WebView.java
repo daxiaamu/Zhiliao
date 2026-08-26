@@ -63,6 +63,7 @@ public class WebView implements IHook {
             }
         });
 
+        if (Helper.WebViewClientWrapper != null) {
         XposedHelpers.findAndHookMethod(Helper.WebViewClientWrapper, "onPageStarted", android.webkit.WebView.class, String.class, Bitmap.class, new XC_MethodHook() {
             @Override
             protected void afterHookedMethod(MethodHookParam param) {
@@ -83,6 +84,7 @@ public class WebView implements IHook {
                 }
             }
         });
+        }
     }
 
     static String getScript(boolean hideWaterMark, boolean hideSubscribe) {

@@ -44,14 +44,20 @@ public final class CompatibilityRegistry {
     private static Catalog catalog = Catalog.empty();
     private static Profile activeProfile;
     private static long activeVersionCode = -1;
+    private static String activeChannel = "";
     private static boolean remoteConfigActive;
     private static String lastInstallError = "";
 
     private CompatibilityRegistry() {
     }
-
     public static synchronized void initialize(Resources resources, SharedPreferences preferences,
                                                long versionCode) {
+        initialize(resources, preferences, versionCode, "");
+    }
+
+
+    public static synchronized void initialize(Resources resources, SharedPreferences preferences,
+                                               long versionCode, String channel) {
         Catalog builtIn = readAsset(resources);
         Catalog selected = builtIn;
         boolean selectedRemote = false;
@@ -65,13 +71,19 @@ public final class CompatibilityRegistry {
                 selectedRemote = true;
             }
         }
-        apply(selected, versionCode, selectedRemote);
+        apply(selected, versionCode, channel, selectedRemote);
     }
 
     /** Used by JVM compatibility tests so they consume exactly the shipped profile data. */
     public static synchronized void initialize(InputStream input, long versionCode) {
         Catalog parsed = parse(read(input));
-        apply(parsed == null ? Catalog.empty() : parsed, versionCode, false);
+        apply(parsed == null ? Catalog.empty() : parsed, versionCode, "", false);
+    }
+
+    /** Used by channel-collision tests where domestic and Play share a version code. */
+    static synchronized void initialize(InputStream input, long versionCode, String channel) {
+        Catalog parsed = parse(read(input));
+        apply(parsed == null ? Catalog.empty() : parsed, versionCode, channel, false);
     }
 
     public static synchronized List<String> getSymbolCandidates(String key) {
@@ -157,17 +169,20 @@ public final class CompatibilityRegistry {
             lastInstallError = "preferences commit failed";
             return false;
         }
-        apply(candidate, activeVersionCode, true);
+        apply(candidate, activeVersionCode, activeChannel, true);
         return true;
     }
 
-    private static void apply(Catalog selected, long versionCode, boolean remote) {
+    private static void apply(Catalog selected, long versionCode, String channel,
+                              boolean remote) {
         catalog = selected;
         activeVersionCode = versionCode;
+        activeChannel = channel == null ? "" : channel;
         remoteConfigActive = remote;
         activeProfile = null;
         for (Profile profile : selected.profiles) {
-            if (versionCode >= profile.minVersionCode && versionCode <= profile.maxVersionCode) {
+            if (versionCode >= profile.minVersionCode && versionCode <= profile.maxVersionCode
+                    && (activeChannel.isEmpty() || activeChannel.equals(profile.channel))) {
                 activeProfile = profile;
                 break;
             }

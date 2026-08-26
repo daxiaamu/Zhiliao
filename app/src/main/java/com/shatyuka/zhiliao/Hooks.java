@@ -86,16 +86,20 @@ public class Hooks {
                 hook.init(classLoader);
                 hook.hook();
             } catch (Throwable e) {
-                failedHooks.add(hook.getName());
-                XposedBridge.log("[Zhiliao] Hook failed: "
-                        + hook.getClass().getSimpleName() + ": " + e);
+                String message = e.getMessage();
+                failedHooks.add(hook.getName() + "（" + e.getClass().getSimpleName()
+                        + (message == null ? "" : "：" + message) + "）");
+                String failure = "[Zhiliao] Hook failed: "
+                        + hook.getClass().getSimpleName() + ": " + e;
+                XposedBridge.log(failure);
+                android.util.Log.e("Zhiliao", failure, e);
             }
         }
         if (!failedHooks.isEmpty()
                 && Helper.prefs.getBoolean("switch_mainswitch", false)
                 && !Helper.prefs.getBoolean("switch_hidetoast", false)) {
             Helper.toast("部分功能与当前知乎版本不兼容（" + failedHooks.size()
-                    + " 项），详情请查看 LSPosed 日志", Toast.LENGTH_LONG);
+                    + " 项）：" + String.join("、", failedHooks), Toast.LENGTH_LONG);
         }
     }
 }

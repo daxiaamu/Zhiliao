@@ -33,7 +33,9 @@ public class ExternLink implements IHook {
 
     @Override
     public void init(ClassLoader classLoader) throws Throwable {
-        shouldOverrideUrlLoading = Helper.WebViewClientWrapper.getMethod("shouldOverrideUrlLoading", WebView.class, WebResourceRequest.class);
+        if (Helper.WebViewClientWrapper != null) {
+            shouldOverrideUrlLoading = Helper.WebViewClientWrapper.getMethod("shouldOverrideUrlLoading", WebView.class, WebResourceRequest.class);
+        }
 
         try {
             H5Event = classLoader.loadClass("com.zhihu.android.app.mercury.api.a");
@@ -58,6 +60,7 @@ public class ExternLink implements IHook {
 
     @Override
     public void hook() throws Throwable {
+        if (shouldOverrideUrlLoading != null) {
         XposedBridge.hookMethod(shouldOverrideUrlLoading, new XC_MethodHook() {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) {
@@ -80,6 +83,7 @@ public class ExternLink implements IHook {
                 }
             }
         });
+        }
 
         XposedBridge.hookMethod(openUrl, new XC_MethodHook() {
             @Override

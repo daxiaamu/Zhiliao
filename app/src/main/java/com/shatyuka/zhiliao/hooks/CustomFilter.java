@@ -140,7 +140,7 @@ public class CustomFilter implements IHook {
                                     continue;
                                 }
                                 if (title == null && author == null && id.equals("Text")) {
-                                    title = (String) TextElement_text.get(element);
+                                    title = readElementText(element);
                                     continue;
                                 }
                                 if (author == null && content == null && element.getClass() == Line && id.equals("0")) {
@@ -159,7 +159,7 @@ public class CustomFilter implements IHook {
                                     }
                                 }
                                 if (content == null && id.endsWith("_summary")) {
-                                    content = (String) TextElement_text.get(element);
+                                    content = readElementText(element);
                                 }
                                 if (element.getClass() == Video) {
                                     hasVideo = true;
@@ -180,6 +180,36 @@ public class CustomFilter implements IHook {
         });
     }
 
+    /**
+     * SDUI may return TextElement or HtmlTextElement for the same logical slot.
+     * Never apply a Field declared by TextElement to an unrelated element class.
+     */
+    private static String readElementText(Object element) {
+        if (element == null) {
+            return null;
+        }
+        try {
+            if (TextElement.isInstance(element)) {
+                return (String) TextElement_text.get(element);
+            }
+            for (String fieldName : new String[]{"text", "html"}) {
+                Class<?> type = element.getClass();
+                while (type != null) {
+                    try {
+                        Field field = type.getDeclaredField(fieldName);
+                        field.setAccessible(true);
+                        Object value = field.get(element);
+                        return value instanceof String ? (String) value : null;
+                    } catch (NoSuchFieldException ignored) {
+                        type = type.getSuperclass();
+                    }
+                }
+            }
+        } catch (ReflectiveOperationException | RuntimeException ignored) {
+            // Unknown server-side element variants must not break feed deserialization.
+        }
+        return null;
+    }
     private boolean filter(String type, boolean hasVideo, String title, String author, String content) {
         if (Helper.prefs.getBoolean("switch_video", false) && (type.equals("zvideo") || type.equals("drama") || hasVideo)) {
             return true;

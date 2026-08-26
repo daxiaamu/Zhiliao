@@ -6,6 +6,7 @@ import com.shatyuka.zhiliao.Helper;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.LinkedList;
 
 import com.shatyuka.zhiliao.xposed.XC_MethodHook;
@@ -33,14 +34,21 @@ public class SearchAd implements IHook {
                 "searchResponseConverters")) {
             try {
                 JacksonResponseBodyConverter = classLoader.loadClass(className);
-                converts.add(JacksonResponseBodyConverter.getMethod("convert", Object.class));
+                Method convert = JacksonResponseBodyConverter.getMethod("convert", Object.class);
+                if (!Modifier.isAbstract(convert.getModifiers())) {
+                    converts.add(convert);
+                }
             } catch (ClassNotFoundException | NoSuchMethodException ignored) {
             }
         }
         if (converts.isEmpty()) {
-            converts.addAll(DexResolver.findMethods(
+            for (Method convert : DexResolver.findMethods(
                     "search_response_converters", "retrofit2", "convert",
-                    Object.class, Object.class));
+                    Object.class, Object.class)) {
+                if (!Modifier.isAbstract(convert.getModifiers())) {
+                    converts.add(convert);
+                }
+            }
         }
         if (converts.isEmpty()) {
             throw new ClassNotFoundException("retrofit2.converter.jackson.JacksonResponseBodyConverter");

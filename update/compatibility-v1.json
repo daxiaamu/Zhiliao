@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "revision": 2026081304,
+  "revision": 2026082701,
   "targetPackage": "com.zhihu.android",
   "compatibilityUrl": "https://pan.quark.cn/s/4f43a6eab295",
   "defaults": {
@@ -70,6 +70,16 @@
       "id": "domestic-11.5.0-40530",
       "channel": "domestic",
       "displayName": "国内版",
+      "versionName": "11.5.0",
+      "minVersionCode": 40530,
+      "maxVersionCode": 40530,
+      "status": "adapted",
+      "symbols": {}
+    },
+    {
+      "id": "play-11.5.0-40530",
+      "channel": "play",
+      "displayName": "Google Play 版",
       "versionName": "11.5.0",
       "minVersionCode": 40530,
       "maxVersionCode": 40530,
