@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "revision": 2026082701,
+  "revision": 2026082712,
   "targetPackage": "com.zhihu.android",
   "compatibilityUrl": "https://pan.quark.cn/s/4f43a6eab295",
   "defaults": {
@@ -83,6 +83,16 @@
       "versionName": "11.5.0",
       "minVersionCode": 40530,
       "maxVersionCode": 40530,
+      "status": "adapted",
+      "symbols": {}
+    },
+    {
+      "id": "domestic-11.7.0-40714",
+      "channel": "domestic",
+      "displayName": "国内版",
+      "versionName": "11.7.0",
+      "minVersionCode": 40714,
+      "maxVersionCode": 40714,
       "status": "adapted",
       "symbols": {}
     }
