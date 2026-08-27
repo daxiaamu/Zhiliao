@@ -67,7 +67,7 @@ public final class MainHook extends XposedModule {
                         if (initialized || !(param.args[0] instanceof Application)) return;
                         initialized = true;
                         Application application = (Application) param.args[0];
-                        Helper.context = application.getApplicationContext();
+                        Helper.context = application;
                         registerRestartReceiver(application);
                         Helper.prefs = getRemotePreferences("zhiliao_preferences");
                         try {

@@ -1,6 +1,8 @@
 package com.shatyuka.zhiliao.hooks;
 
 import android.app.Activity;
+import android.app.Application;
+import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -30,7 +32,7 @@ public final class CashEntry implements IHook {
     private static int searchContainerId;
     private static int iconId;
 
-    private Class<?> activityClass;
+    private Class<?> viewClass;
     private Class<?> viewGroupClass;
     private Method displayMethod;
 
@@ -41,18 +43,22 @@ public final class CashEntry implements IHook {
 
     @Override
     public void init(ClassLoader classLoader) throws Throwable {
-        activityClass = classLoader.loadClass("android.app.Activity");
+        viewClass = classLoader.loadClass("android.view.View");
         viewGroupClass = classLoader.loadClass("android.view.ViewGroup");
-        Class<?> fragmentClass = classLoader.loadClass(MAIN_PAGE_FRAGMENT);
-        displayMethod = configuredMethod(fragmentClass);
-        if (displayMethod == null) {
-            displayMethod = DexResolver.findMethodByInvokes(
-                    "cash_entry_display",
-                    "com.zhihu.android.app.feed.explore.view",
-                    MAIN_PAGE_FRAGMENT,
-                    1,
-                    USER_TASK_DATA + "->getNavigationBarImageUrl()Ljava/lang/String;",
-                    USER_TASK_DATA + "->getRouter()Ljava/lang/String;");
+        try {
+            Class<?> fragmentClass = classLoader.loadClass(MAIN_PAGE_FRAGMENT);
+            displayMethod = configuredMethod(fragmentClass);
+            if (displayMethod == null) {
+                displayMethod = DexResolver.findMethodByInvokes(
+                        "cash_entry_display",
+                        "com.zhihu.android.app.feed.explore.view",
+                        MAIN_PAGE_FRAGMENT,
+                        1,
+                        USER_TASK_DATA + "->getNavigationBarImageUrl()Ljava/lang/String;",
+                        USER_TASK_DATA + "->getRouter()Ljava/lang/String;");
+            }
+        } catch (Throwable ignored) {
+            displayMethod = null;
         }
     }
 
@@ -66,9 +72,28 @@ public final class CashEntry implements IHook {
                         param.setResult(null);
                 }
             });
-            return;
         }
-        hookStructuralFallback();
+        hookVisibilityWrites();
+        hookStructuralFallback(true);
+        registerLifecycleFallback();
+    }
+
+    /** Blocks guide/task callbacks from making the already-created entry visible again. */
+    private void hookVisibilityWrites() {
+        XposedBridge.hookAllMethods(viewClass, "setVisibility", new XC_MethodHook() {
+            @Override
+            protected void beforeHookedMethod(MethodHookParam param) {
+                if (!(param.thisObject instanceof View) || param.args.length != 1
+                        || !(param.args[0] instanceof Integer)
+                        || (Integer) param.args[0] != View.VISIBLE)
+                    return;
+                View view = (View) param.thisObject;
+                if (isCashEntry(view) && isEnabled()) {
+                    hiddenViews.putIfAbsent(view, View.VISIBLE);
+                    param.args[0] = View.GONE;
+                }
+            }
+        });
     }
 
     private static Method configuredMethod(Class<?> fragmentClass) {
@@ -83,36 +108,55 @@ public final class CashEntry implements IHook {
     }
 
     /** Last-resort protection for a new version until CI publishes a symbol profile. */
-    private void hookStructuralFallback() {
-        XposedBridge.hookAllMethods(viewGroupClass, "addView", new XC_MethodHook() {
-            @Override
-            protected void beforeHookedMethod(MethodHookParam param) {
-                if (!isEnabled() || !(param.thisObject instanceof ViewGroup)
-                        || param.args.length == 0 || !(param.args[0] instanceof View))
-                    return;
-                ViewGroup parent = (ViewGroup) param.thisObject;
-                View child = (View) param.args[0];
-                ensureIds(parent);
-                if (topContainerId != 0 && iconId != 0
-                        && parent.getId() == topContainerId && child.getId() == iconId)
-                    hide(child);
-            }
-        });
-        XposedBridge.hookAllMethods(activityClass, "onResume", new XC_MethodHook() {
-            @Override
-            protected void afterHookedMethod(MethodHookParam param) {
-                if (!(param.thisObject instanceof Activity))
-                    return;
-                Activity activity = (Activity) param.thisObject;
-                if (!MAIN_ACTIVITY.equals(activity.getClass().getName()))
-                    return;
-                View decor = activity.getWindow().getDecorView();
-                Runnable update = () -> updateVisibility(decor);
-                decor.post(update);
-                decor.postDelayed(update, 500L);
-                decor.postDelayed(update, 1500L);
-            }
-        });
+    private void hookStructuralFallback(boolean monitorAddView) {
+        if (monitorAddView) {
+            XposedBridge.hookAllMethods(viewGroupClass, "addView", new XC_MethodHook() {
+                @Override
+                protected void beforeHookedMethod(MethodHookParam param) {
+                    if (!isEnabled() || !(param.thisObject instanceof ViewGroup)
+                            || param.args.length == 0 || !(param.args[0] instanceof View))
+                        return;
+                    ViewGroup parent = (ViewGroup) param.thisObject;
+                    View child = (View) param.args[0];
+                    ensureIds(parent);
+                    if (topContainerId != 0 && iconId != 0
+                            && parent.getId() == topContainerId && child.getId() == iconId)
+                        hide(child);
+                }
+            });
+        }
+    }
+
+    private static void registerLifecycleFallback() {
+        if (!(Helper.context instanceof Application))
+            return;
+        ((Application) Helper.context).registerActivityLifecycleCallbacks(
+                new Application.ActivityLifecycleCallbacks() {
+                    private void update(Activity activity) {
+                        if (MAIN_ACTIVITY.equals(activity.getClass().getName()))
+                            scheduleVisibilityUpdates(activity.getWindow().getDecorView());
+                    }
+                    @Override public void onActivityCreated(Activity activity, Bundle state) {
+                        update(activity);
+                    }
+                    @Override public void onActivityResumed(Activity activity) {
+                        update(activity);
+                    }
+                    @Override public void onActivityStarted(Activity activity) {}
+                    @Override public void onActivityPaused(Activity activity) {}
+                    @Override public void onActivityStopped(Activity activity) {}
+                    @Override public void onActivitySaveInstanceState(Activity activity, Bundle state) {}
+                    @Override public void onActivityDestroyed(Activity activity) {}
+                });
+    }
+
+    private static void scheduleVisibilityUpdates(View decor) {
+        Runnable update = () -> updateVisibility(decor);
+        decor.post(update);
+        decor.postDelayed(update, 250L);
+        decor.postDelayed(update, 750L);
+        decor.postDelayed(update, 1500L);
+        decor.postDelayed(update, 2500L);
     }
 
     private static void updateVisibility(View root) {
@@ -161,6 +205,19 @@ public final class CashEntry implements IHook {
     private static void hide(View view) {
         hiddenViews.putIfAbsent(view, view.getVisibility());
         view.setVisibility(View.GONE);
+    }
+
+    private static boolean isCashEntry(View view) {
+        ensureIds(view);
+        if (iconId == 0 || view.getId() != iconId || !(view.getParent() instanceof ViewGroup))
+            return false;
+        return isCashEntry((ViewGroup) view.getParent(), view);
+    }
+
+    private static boolean isCashEntry(ViewGroup parent, View child) {
+        ensureIds(parent);
+        return topContainerId != 0 && iconId != 0
+                && parent.getId() == topContainerId && child.getId() == iconId;
     }
 
     private static void ensureIds(View view) {

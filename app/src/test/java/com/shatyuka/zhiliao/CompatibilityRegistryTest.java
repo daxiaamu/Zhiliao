@@ -35,12 +35,14 @@ public class CompatibilityRegistryTest {
         initialize(999999);
         assertEquals("feature-fallback", CompatibilityRegistry.getActiveProfileId());
         assertFalse(CompatibilityRegistry.getSymbolCandidates("searchResponseConverters").isEmpty());
+        assertTrue(CompatibilityRegistry.getSymbolCandidates("launchAdCloseViewIds")
+                .contains("btn_skip"));
     }
 
     @Test
     public void catalogDrivesAdaptedVersionDialog() throws Exception {
         initialize(40408);
-        assertEquals(4, CompatibilityRegistry.getAdaptedVersions().size());
+        assertEquals(7, CompatibilityRegistry.getAdaptedVersions().size());
         assertEquals("\u56fd\u5185\u7248", CompatibilityRegistry.getAdaptedVersions().get(0).displayName);
         assertEquals("11.4.0", CompatibilityRegistry.getAdaptedVersions().get(0).versionName);
         assertEquals(40408, CompatibilityRegistry.getAdaptedVersions().get(0).minVersionCode);
@@ -52,6 +54,15 @@ public class CompatibilityRegistryTest {
         assertEquals("Google Play 版", CompatibilityRegistry.getAdaptedVersions().get(3).displayName);
         assertEquals("11.5.0", CompatibilityRegistry.getAdaptedVersions().get(3).versionName);
         assertEquals(40530, CompatibilityRegistry.getAdaptedVersions().get(3).minVersionCode);
+        assertEquals("国内版", CompatibilityRegistry.getAdaptedVersions().get(4).displayName);
+        assertEquals("11.6.0", CompatibilityRegistry.getAdaptedVersions().get(4).versionName);
+        assertEquals(40608, CompatibilityRegistry.getAdaptedVersions().get(4).minVersionCode);
+        assertEquals("国内版", CompatibilityRegistry.getAdaptedVersions().get(5).displayName);
+        assertEquals("11.7.0", CompatibilityRegistry.getAdaptedVersions().get(5).versionName);
+        assertEquals(40714, CompatibilityRegistry.getAdaptedVersions().get(5).minVersionCode);
+        assertEquals("国内版", CompatibilityRegistry.getAdaptedVersions().get(6).displayName);
+        assertEquals("11.8.0", CompatibilityRegistry.getAdaptedVersions().get(6).versionName);
+        assertEquals(40811, CompatibilityRegistry.getAdaptedVersions().get(6).minVersionCode);
     }
 
     @Test
