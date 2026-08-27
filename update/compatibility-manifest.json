@@ -1,13 +1,13 @@
 {
   "schemaVersion": 1,
-  "revision": 2026082701,
-  "sha256": "281496a97a3b941f75d4eb4490c2b822f09d4814bdafc2bf1d621f90514e90fc",
+  "revision": 2026082702,
+  "sha256": "956f78d775017ca00d45df53a89843e31db2c79f2a863f7353809a4bd4ceec74",
   "urls": [
-    "https://raw.githubusercontent.com/daxiaamu/Zhiliao/a91556bbb3a529bb68c81dfcd404abb2e9b35c76/update/compatibility-v1.json",
-    "https://cdn.jsdelivr.net/gh/daxiaamu/Zhiliao@a91556bbb3a529bb68c81dfcd404abb2e9b35c76/update/compatibility-v1.json",
-    "https://fastly.jsdelivr.net/gh/daxiaamu/Zhiliao@a91556bbb3a529bb68c81dfcd404abb2e9b35c76/update/compatibility-v1.json",
-    "https://gcore.jsdelivr.net/gh/daxiaamu/Zhiliao@a91556bbb3a529bb68c81dfcd404abb2e9b35c76/update/compatibility-v1.json",
-    "https://testingcf.jsdelivr.net/gh/daxiaamu/Zhiliao@a91556bbb3a529bb68c81dfcd404abb2e9b35c76/update/compatibility-v1.json",
-    "https://cdn.statically.io/gh/daxiaamu/Zhiliao/a91556bbb3a529bb68c81dfcd404abb2e9b35c76/update/compatibility-v1.json"
+    "https://raw.githubusercontent.com/daxiaamu/Zhiliao/4e4a4daa28d7f7941530d094066c559a3822a0ad/update/compatibility-v1.json",
+    "https://cdn.jsdelivr.net/gh/daxiaamu/Zhiliao@4e4a4daa28d7f7941530d094066c559a3822a0ad/update/compatibility-v1.json",
+    "https://fastly.jsdelivr.net/gh/daxiaamu/Zhiliao@4e4a4daa28d7f7941530d094066c559a3822a0ad/update/compatibility-v1.json",
+    "https://gcore.jsdelivr.net/gh/daxiaamu/Zhiliao@4e4a4daa28d7f7941530d094066c559a3822a0ad/update/compatibility-v1.json",
+    "https://testingcf.jsdelivr.net/gh/daxiaamu/Zhiliao@4e4a4daa28d7f7941530d094066c559a3822a0ad/update/compatibility-v1.json",
+    "https://cdn.statically.io/gh/daxiaamu/Zhiliao/4e4a4daa28d7f7941530d094066c559a3822a0ad/update/compatibility-v1.json"
   ]
 }
