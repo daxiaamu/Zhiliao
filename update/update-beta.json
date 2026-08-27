@@ -1,18 +1,18 @@
 {
   "schemaVersion": 1,
-  "versionCode": 2026082706,
-  "versionName": "26.08.27-beta.6",
-  "url": "https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.27-beta.6/Zhiliao_26.08.27-beta.6.apk",
+  "versionCode": 2026082807,
+  "versionName": "26.08.28-beta.7",
+  "url": "https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.28-beta.7/Zhiliao_26.08.28-beta.7.apk",
   "urls": [
-    "https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.27-beta.6/Zhiliao_26.08.27-beta.6.apk",
-    "https://ghfast.top/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.27-beta.6/Zhiliao_26.08.27-beta.6.apk",
-    "https://gh-proxy.com/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.27-beta.6/Zhiliao_26.08.27-beta.6.apk",
-    "https://ghproxy.net/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.27-beta.6/Zhiliao_26.08.27-beta.6.apk",
-    "https://gh.llkk.cc/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.27-beta.6/Zhiliao_26.08.27-beta.6.apk",
-    "https://ghp.keleyaa.com/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.27-beta.6/Zhiliao_26.08.27-beta.6.apk",
-    "https://gh.monlor.com/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.27-beta.6/Zhiliao_26.08.27-beta.6.apk"
+    "https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.28-beta.7/Zhiliao_26.08.28-beta.7.apk",
+    "https://ghfast.top/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.28-beta.7/Zhiliao_26.08.28-beta.7.apk",
+    "https://gh-proxy.com/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.28-beta.7/Zhiliao_26.08.28-beta.7.apk",
+    "https://ghproxy.net/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.28-beta.7/Zhiliao_26.08.28-beta.7.apk",
+    "https://gh.llkk.cc/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.28-beta.7/Zhiliao_26.08.28-beta.7.apk",
+    "https://ghp.keleyaa.com/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.28-beta.7/Zhiliao_26.08.28-beta.7.apk",
+    "https://gh.monlor.com/https://github.com/daxiaamu/Zhiliao/releases/download/v26.08.28-beta.7/Zhiliao_26.08.28-beta.7.apk"
   ],
-  "sha256": "6c5fae116d4bc916548532bbae5929b3645e0f171bbb30827f698b150dbb4109",
-  "changelog": "## 26.08.27-beta.6\n\n- 新增并真机验证知乎 Google Play 版 11.5.0（40530）适配；国内版与 Play 版现按“渠道 + versionCode”联合选择兼容档案，避免同版本号串用规则。\n- 修复 Play 版启动时“直接打开外部链接”“去搜索广告”“WebView 修改”三项 Hook 初始化失败及兼容提示。\n- WebView 包装器缺失时改为安全跳过对应子 Hook，不再拖累外链和 WebView 的其他能力。\n- 搜索广告仅 Hook Retrofit 的具体实现方法，自动排除现代 libxposed API 不允许 Hook 的抽象方法。\n- 修复服务端返回 `HtmlTextElement` 时自定义过滤错误按 `TextElement` 读取所导致的 ProtectiveHooker 异常。\n- 不兼容 Toast 现在直接列出失败功能及异常摘要，便于定位未知知乎版本的问题。\n- 内置兼容清单、云配置、应用内“查看已适配版本”和 README 已同步加入 Google Play 版 11.5.0（40530）。\n- README 移除已经废弃的知乎设置页入口说明，明确通过知了独立 APP 或 LSPosed 打开设置。\n\n## 验证\n\n- 使用手机当前 Google Play 拆分包 11.5.0（40530）运行完整 Hook 静态兼容测试。\n- 55 项单元测试全部通过，Release Lint、云配置校验和正式签名构建通过。\n- 真机冷启动无不兼容 Toast；连续滚动信息流未发现 Hook 异常、`HtmlTextElement` 类型异常或崩溃。\n- targetSdk 37，LSPosed modern API 102。\n- APK SHA-256：`6C5FAE116D4BC916548532BBAE5929B3645E0F171BBB30827F698B150DBB4109`\n- 正式证书 SHA-256：`A3278D7A7A11754FE8D8042A0E2666CAEF60505DBD97DB7A1127B88BB622C7F9`",
-  "publishedAt": "2026-08-26T20:33:54Z"
+  "sha256": "72a7984c43522be2f0ff8b990d6c2e029fd274637dfe8dee86cd18679d176895",
+  "changelog": "## 26.08.28-beta.7\n\n- 新增知乎国内版 11.6.0（40608）、11.7.0（40714）、11.8.0（40811）兼容档案；README、内置清单、云配置和应用内“查看已适配版本”同步更新。\n- 修复“关闭搜索栏左侧营销位”在知乎引导完成后重新出现：保留业务方法 NOP，并增加创建、生命周期恢复和二次显示三层兜底，仅匹配首页顶部营销控件。\n- 优化营销位兜底 Hook 的热路径：先按资源 ID 与父容器筛选唯一目标，命中后才读取开关，避免影响其他 View。\n- 提升未知知乎版本的启动广告兼容性：业务符号解析失败时不再导致整项 Hook 失效，改由 Activity 生命周期查找并点击知乎官方跳过/关闭控件。\n- 启动广告关闭控件 ID 支持随兼容云配置下发，当前内置 `btn_skip` 与 `tv_ad_close`。\n- 修正 Hook 上下文为实际 `Application`，确保生命周期兜底在新版本知乎中可靠注册。\n\n## 验证\n\n- OnePlus 9R、Android 14、知乎国内版 11.8.0 真机 A/B：关闭功能时营销图标位于 `[48,103][162,217]`、搜索框从 x=186 开始；开启功能后营销图标消失、搜索框恢复从 x=48 开始。\n- 55 项单元测试全部通过；Release Lint 0 errors；兼容配置双副本 SHA-256 一致；正式签名构建通过。\n- targetSdk 37，LSPosed modern API 102。\n- APK SHA-256：`72A7984C43522BE2F0FF8B990D6C2E029FD274637DFE8DEE86CD18679D176895`\n- 正式证书 SHA-256：`A3278D7A7A11754FE8D8042A0E2666CAEF60505DBD97DB7A1127B88BB622C7F9`",
+  "publishedAt": "2026-08-27T16:14:27Z"
 }
