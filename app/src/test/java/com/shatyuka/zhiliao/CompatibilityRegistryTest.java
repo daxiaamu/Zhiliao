@@ -42,7 +42,7 @@ public class CompatibilityRegistryTest {
     @Test
     public void catalogDrivesAdaptedVersionDialog() throws Exception {
         initialize(40408);
-        assertEquals(8, CompatibilityRegistry.getAdaptedVersions().size());
+        assertEquals(9, CompatibilityRegistry.getAdaptedVersions().size());
         assertEquals("\u56fd\u5185\u7248", CompatibilityRegistry.getAdaptedVersions().get(0).displayName);
         assertEquals("11.4.0", CompatibilityRegistry.getAdaptedVersions().get(0).versionName);
         assertEquals(40408, CompatibilityRegistry.getAdaptedVersions().get(0).minVersionCode);
@@ -66,6 +66,9 @@ public class CompatibilityRegistryTest {
         assertEquals("国内版", CompatibilityRegistry.getAdaptedVersions().get(7).displayName);
         assertEquals("11.8.0", CompatibilityRegistry.getAdaptedVersions().get(7).versionName);
         assertEquals(40816, CompatibilityRegistry.getAdaptedVersions().get(7).minVersionCode);
+        assertEquals("国内版", CompatibilityRegistry.getAdaptedVersions().get(8).displayName);
+        assertEquals("11.6.1", CompatibilityRegistry.getAdaptedVersions().get(8).versionName);
+        assertEquals(40612, CompatibilityRegistry.getAdaptedVersions().get(8).minVersionCode);
     }
 
     @Test
