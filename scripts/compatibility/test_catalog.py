@@ -12,6 +12,7 @@ from catalog import (
     is_adapted,
     parse_apkpure_download_url,
     parse_apkpure_version_code,
+    parse_apkmirror_version_code,
     parse_play_version,
 )
 
@@ -72,6 +73,22 @@ class CatalogTest(unittest.TestCase):
         html = '<li data-dt-version="11.15.0" data-dt-version-code="41512"></li>'
         with self.assertRaises(CatalogError):
             parse_apkpure_version_code(html, "11.13.0")
+
+    def test_apkmirror_version_code_matches_requested_version(self):
+        html = (
+            '<a href="/release"> 11.13.0 </a>'
+            '<span class="apkm-badge">BUNDLE</span>'
+            '<br><span class="colorLightBlack">41312</span>'
+        )
+        self.assertEqual(41312, parse_apkmirror_version_code(html, "11.13.0"))
+
+    def test_apkmirror_version_code_rejects_ambiguous_variants(self):
+        html = (
+            '<a>11.13.0</a><span class="colorLightBlack">41312</span>'
+            '<a>11.13.0</a><span class="colorLightBlack">41313</span>'
+        )
+        with self.assertRaises(CatalogError):
+            parse_apkmirror_version_code(html, "11.13.0")
 
     def test_adapted_match_is_channel_specific(self):
         self.assertTrue(is_adapted(CATALOG, "play", "10.95.0", 29522))

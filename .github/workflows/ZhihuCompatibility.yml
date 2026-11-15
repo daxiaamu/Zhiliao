@@ -129,6 +129,19 @@ jobs:
                   fi
                 fi
               done
+              if [[ -z "$play_apk_url" ]]; then
+                release_slug="${official_version//./-}"
+                apkmirror_url="https://www.apkmirror.com/apk/zhihu/%e7%9f%a5%e4%b9%8e/%e7%9f%a5%e4%b9%8e-${release_slug}-release/"
+                curl --fail --location --retry 3 --retry-all-errors --compressed \
+                  --user-agent 'Mozilla/5.0' \
+                  --output compatibility-work/apkmirror-release.html \
+                  "$apkmirror_url"
+                play_version_code="$(python scripts/compatibility/catalog.py \
+                  parse-apkmirror-version-code \
+                  --html compatibility-work/apkmirror-release.html \
+                  --version-name "$official_version")"
+                play_apk_url="https://d.apkpure.net/b/XAPK/com.zhihu.android?versionCode=$play_version_code"
+              fi
               test -n "$play_apk_url"
             fi
             curl --fail --location --retry 3 --retry-all-errors \

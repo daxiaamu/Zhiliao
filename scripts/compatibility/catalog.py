@@ -242,6 +242,24 @@ def parse_apkpure_version_code(html: str, version_name: str) -> int:
     return codes.pop()
 
 
+def parse_apkmirror_version_code(html: str, version_name: str) -> int:
+    decoded = html_module.unescape(html)
+    pattern = re.compile(
+        r">\s*" + re.escape(version_name)
+        + r"\s*</a>.{0,2000}?class=[\"']colorLightBlack[\"']>\s*(\d+)\s*</span>",
+        re.DOTALL,
+    )
+    codes = {int(match.group(1)) for match in pattern.finditer(decoded)}
+    if not codes:
+        raise CatalogError(f"APKMirror version code was not found for {version_name}")
+    if len(codes) != 1:
+        raise CatalogError(
+            f"APKMirror page contains ambiguous version codes for {version_name}: "
+            + ", ".join(str(code) for code in sorted(codes))
+        )
+    return codes.pop()
+
+
 def next_revision(current: int, requested: int | None = None) -> int:
     candidate = requested
     if candidate is None:
@@ -306,6 +324,10 @@ def build_parser() -> argparse.ArgumentParser:
     apkpure_code.add_argument("--html", type=Path, required=True)
     apkpure_code.add_argument("--version-name", required=True)
 
+    apkmirror_code = subparsers.add_parser("parse-apkmirror-version-code")
+    apkmirror_code.add_argument("--html", type=Path, required=True)
+    apkmirror_code.add_argument("--version-name", required=True)
+
     add = subparsers.add_parser("add-profile")
     add.add_argument("--catalog", type=Path, required=True)
     add.add_argument("--channel", choices=CHANNEL_NAMES, required=True)
@@ -332,6 +354,10 @@ def main(argv: list[str] | None = None) -> int:
         if args.command == "parse-apkpure-version-code":
             html = args.html.read_text(encoding="utf-8")
             print(parse_apkpure_version_code(html, args.version_name))
+            return 0
+        if args.command == "parse-apkmirror-version-code":
+            html = args.html.read_text(encoding="utf-8")
+            print(parse_apkmirror_version_code(html, args.version_name))
             return 0
 
         catalog = load_catalog(args.catalog)
