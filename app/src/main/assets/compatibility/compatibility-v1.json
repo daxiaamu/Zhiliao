@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "revision": 2026111508,
+  "revision": 2026111509,
   "targetPackage": "com.zhihu.android",
   "compatibilityUrl": "https://pan.quark.cn/s/4f43a6eab295",
   "defaults": {
@@ -219,6 +219,20 @@
       "maxVersionCode": 41512,
       "status": "adapted",
       "symbols": {}
+    },
+    {
+      "id": "play-11.13.0-41312",
+      "channel": "play",
+      "displayName": "Google Play 版",
+      "versionName": "11.13.0",
+      "minVersionCode": 41312,
+      "maxVersionCode": 41312,
+      "status": "adapted",
+      "symbols": {
+        "searchResponseConverters": [
+          "retrofit2.converter.jackson.c"
+        ]
+      }
     }
   ]
 }

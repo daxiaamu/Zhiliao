@@ -42,7 +42,7 @@ public class CompatibilityRegistryTest {
     @Test
     public void catalogDrivesAdaptedVersionDialog() throws Exception {
         initialize(40408);
-        assertEquals(17, CompatibilityRegistry.getAdaptedVersions().size());
+        assertEquals(18, CompatibilityRegistry.getAdaptedVersions().size());
         assertEquals("\u56fd\u5185\u7248", CompatibilityRegistry.getAdaptedVersions().get(0).displayName);
         assertEquals("11.4.0", CompatibilityRegistry.getAdaptedVersions().get(0).versionName);
         assertEquals(40408, CompatibilityRegistry.getAdaptedVersions().get(0).minVersionCode);
@@ -85,6 +85,9 @@ public class CompatibilityRegistryTest {
         assertEquals(41410, CompatibilityRegistry.getAdaptedVersions().get(15).minVersionCode);
         assertEquals("11.15.0", CompatibilityRegistry.getAdaptedVersions().get(16).versionName);
         assertEquals(41512, CompatibilityRegistry.getAdaptedVersions().get(16).minVersionCode);
+        assertEquals("Google Play 版", CompatibilityRegistry.getAdaptedVersions().get(17).displayName);
+        assertEquals("11.13.0", CompatibilityRegistry.getAdaptedVersions().get(17).versionName);
+        assertEquals(41312, CompatibilityRegistry.getAdaptedVersions().get(17).minVersionCode);
     }
 
     @Test
@@ -99,6 +102,16 @@ public class CompatibilityRegistryTest {
         assertEquals("play-11.5.0-40530", CompatibilityRegistry.getActiveProfileId());
         assertEquals("https://pan.quark.cn/s/4f43a6eab295",
                 CompatibilityRegistry.getCompatibilityUrl());
+    }
+
+    @Test
+    public void play1113SelectsItsSearchConverterAtCollidingVersionCode() throws Exception {
+        try (InputStream input = new FileInputStream(ASSET)) {
+            CompatibilityRegistry.initialize(input, 41312, "play");
+        }
+        assertEquals("play-11.13.0-41312", CompatibilityRegistry.getActiveProfileId());
+        assertEquals("retrofit2.converter.jackson.c",
+                CompatibilityRegistry.getSymbolCandidates("searchResponseConverters").get(0));
     }
 
     @Test

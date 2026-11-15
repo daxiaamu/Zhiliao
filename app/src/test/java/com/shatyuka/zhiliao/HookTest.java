@@ -53,10 +53,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 
 public class HookTest {
     static class PackageInfo {
         String name;
+        String channel;
         int versionCode;
         ClassLoader classLoader;
     }
@@ -101,6 +103,8 @@ public class HookTest {
                     continue;
                 PackageInfo packageInfo = new PackageInfo();
                 packageInfo.name = fileName.substring(0, index2);
+                packageInfo.channel = packageInfo.name.toLowerCase(Locale.ROOT).contains("play")
+                        ? "play" : "domestic";
                 packageInfo.versionCode = Integer.parseInt(fileName.substring(index2 + 1, index1));
                 packageInfo.classLoader = new Dex2JarClassLoader(new URL[]{file.toURI().toURL()});
                 packageInfos.add(packageInfo);
@@ -191,7 +195,8 @@ public class HookTest {
                 Helper.versionCode = packageInfo.versionCode;
                 try (InputStream compatibility = new FileInputStream(
                         "src/main/assets/compatibility/compatibility-v1.json")) {
-                    CompatibilityRegistry.initialize(compatibility, packageInfo.versionCode);
+                    CompatibilityRegistry.initialize(
+                            compatibility, packageInfo.versionCode, packageInfo.channel);
                 }
                 Helper.initSharedClasses(packageInfo.classLoader);
                 hook.init(packageInfo.classLoader);
