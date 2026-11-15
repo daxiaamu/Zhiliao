@@ -33,6 +33,16 @@
 知了是面向知乎 Android 客户端的 LSPosed/Xposed 模块，用于移除广告、精简界面并改善部分交互体验。项目同时维护国内版与 Google Play 版适配，并通过远程兼容配置和 DexKit 回退提高对未知版本的适应能力。
 > 本项目仅用于学习、研究和改善个人使用体验，与知乎无关。请遵守所在地法律法规及知乎服务协议。
 
+## 界面预览
+
+<p align="center">
+  <img src="docs/screenshots/settings.png" width="320" alt="知了模块设置界面">
+  &nbsp;&nbsp;
+  <img src="docs/screenshots/update-about.png" width="320" alt="知了更新与关于界面">
+</p>
+
+<p align="center">模块设置 · 更新与关于</p>
+
 ## 主要功能
 
 ### 广告与启动
