@@ -11,6 +11,7 @@ from catalog import (
     add_profile,
     is_adapted,
     parse_apkpure_download_url,
+    parse_apkpure_version_code,
     parse_play_version,
 )
 
@@ -59,6 +60,18 @@ class CatalogTest(unittest.TestCase):
         )
         with self.assertRaises(CatalogError):
             parse_apkpure_download_url(html)
+
+    def test_apkpure_version_code_matches_requested_version(self):
+        html = (
+            '<li data-dt-version="11.15.0" data-dt-version-code="41512"></li>'
+            '<li data-dt-version="11.13.0" data-dt-version-code="41312"></li>'
+        )
+        self.assertEqual(41312, parse_apkpure_version_code(html, "11.13.0"))
+
+    def test_apkpure_version_code_rejects_missing_version(self):
+        html = '<li data-dt-version="11.15.0" data-dt-version-code="41512"></li>'
+        with self.assertRaises(CatalogError):
+            parse_apkpure_version_code(html, "11.13.0")
 
     def test_adapted_match_is_channel_specific(self):
         self.assertTrue(is_adapted(CATALOG, "play", "10.95.0", 29522))

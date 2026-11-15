@@ -223,6 +223,25 @@ def parse_apkpure_download_url(html: str) -> str:
     return urls.pop()
 
 
+def parse_apkpure_version_code(html: str, version_name: str) -> int:
+    codes: set[int] = set()
+    for tag in re.findall(r"<[^>]+data-dt-version[^>]*>", html_module.unescape(html)):
+        attributes = dict(re.findall(r'(data-dt-version(?:-code)?)="([^"]+)"', tag))
+        if attributes.get("data-dt-version") != version_name:
+            continue
+        code = attributes.get("data-dt-version-code", "")
+        if code.isdigit():
+            codes.add(int(code))
+    if not codes:
+        raise CatalogError(f"APKPure version code was not found for {version_name}")
+    if len(codes) != 1:
+        raise CatalogError(
+            f"APKPure page contains ambiguous version codes for {version_name}: "
+            + ", ".join(str(code) for code in sorted(codes))
+        )
+    return codes.pop()
+
+
 def next_revision(current: int, requested: int | None = None) -> int:
     candidate = requested
     if candidate is None:
@@ -283,6 +302,10 @@ def build_parser() -> argparse.ArgumentParser:
     apkpure = subparsers.add_parser("parse-apkpure-download-url")
     apkpure.add_argument("--html", type=Path, required=True)
 
+    apkpure_code = subparsers.add_parser("parse-apkpure-version-code")
+    apkpure_code.add_argument("--html", type=Path, required=True)
+    apkpure_code.add_argument("--version-name", required=True)
+
     add = subparsers.add_parser("add-profile")
     add.add_argument("--catalog", type=Path, required=True)
     add.add_argument("--channel", choices=CHANNEL_NAMES, required=True)
@@ -305,6 +328,10 @@ def main(argv: list[str] | None = None) -> int:
         if args.command == "parse-apkpure-download-url":
             html = args.html.read_text(encoding="utf-8")
             print(parse_apkpure_download_url(html))
+            return 0
+        if args.command == "parse-apkpure-version-code":
+            html = args.html.read_text(encoding="utf-8")
+            print(parse_apkpure_version_code(html, args.version_name))
             return 0
 
         catalog = load_catalog(args.catalog)

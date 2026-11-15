@@ -112,13 +112,24 @@ jobs:
             echo 'needs_apk=true' >> "$GITHUB_OUTPUT"
             play_apk_url="$PLAY_APK_URL"
             if [[ -z "$play_apk_url" ]]; then
-              curl --fail --location --retry 3 --retry-all-errors --compressed \
-                --user-agent 'Mozilla/5.0' \
-                --output compatibility-work/apkpure-version.html \
-                "https://apkpure.net/cn/zhihu/com.zhihu.android/download/$official_version"
-              play_apk_url="$(python scripts/compatibility/catalog.py \
-                parse-apkpure-download-url \
-                --html compatibility-work/apkpure-version.html)"
+              for version_page in \
+                'https://apkpure.com/zhihu/com.zhihu.android/versions' \
+                'https://apkpure.net/cn/zhihu/com.zhihu.android/versions'; do
+                if curl --fail --location --retry 2 --retry-all-errors --compressed \
+                  --user-agent 'Mozilla/5.0' \
+                  --output compatibility-work/apkpure-versions.html \
+                  "$version_page"; then
+                  play_version_code="$(python scripts/compatibility/catalog.py \
+                    parse-apkpure-version-code \
+                    --html compatibility-work/apkpure-versions.html \
+                    --version-name "$official_version" 2>/dev/null || true)"
+                  if [[ -n "$play_version_code" ]]; then
+                    play_apk_url="https://d.apkpure.net/b/XAPK/com.zhihu.android?versionCode=$play_version_code"
+                    break
+                  fi
+                fi
+              done
+              test -n "$play_apk_url"
             fi
             curl --fail --location --retry 3 --retry-all-errors \
               --user-agent 'APKPure/3.20.49 (Linux; Android 16)' \
