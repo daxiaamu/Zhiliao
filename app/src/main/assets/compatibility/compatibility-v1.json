@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "revision": 2026090301,
+  "revision": 2026111508,
   "targetPackage": "com.zhihu.android",
   "compatibilityUrl": "https://pan.quark.cn/s/4f43a6eab295",
   "defaults": {
@@ -137,6 +137,86 @@
       "versionName": "11.6.1",
       "minVersionCode": 40612,
       "maxVersionCode": 40612,
+      "status": "adapted",
+      "symbols": {}
+    },
+    {
+      "id": "domestic-11.9.0-40910",
+      "channel": "domestic",
+      "displayName": "国内版",
+      "versionName": "11.9.0",
+      "minVersionCode": 40910,
+      "maxVersionCode": 40910,
+      "status": "adapted",
+      "symbols": {}
+    },
+    {
+      "id": "domestic-11.10.0-41012",
+      "channel": "domestic",
+      "displayName": "国内版",
+      "versionName": "11.10.0",
+      "minVersionCode": 41012,
+      "maxVersionCode": 41012,
+      "status": "adapted",
+      "symbols": {}
+    },
+    {
+      "id": "domestic-11.11.0-41106",
+      "channel": "domestic",
+      "displayName": "国内版",
+      "versionName": "11.11.0",
+      "minVersionCode": 41106,
+      "maxVersionCode": 41106,
+      "status": "adapted",
+      "symbols": {}
+    },
+    {
+      "id": "domestic-11.11.1-41108",
+      "channel": "domestic",
+      "displayName": "国内版",
+      "versionName": "11.11.1",
+      "minVersionCode": 41108,
+      "maxVersionCode": 41108,
+      "status": "adapted",
+      "symbols": {}
+    },
+    {
+      "id": "domestic-11.12.0-41208",
+      "channel": "domestic",
+      "displayName": "国内版",
+      "versionName": "11.12.0",
+      "minVersionCode": 41208,
+      "maxVersionCode": 41208,
+      "status": "adapted",
+      "symbols": {}
+    },
+    {
+      "id": "domestic-11.13.0-41312",
+      "channel": "domestic",
+      "displayName": "国内版",
+      "versionName": "11.13.0",
+      "minVersionCode": 41312,
+      "maxVersionCode": 41312,
+      "status": "adapted",
+      "symbols": {}
+    },
+    {
+      "id": "domestic-11.14.0-41410",
+      "channel": "domestic",
+      "displayName": "国内版",
+      "versionName": "11.14.0",
+      "minVersionCode": 41410,
+      "maxVersionCode": 41410,
+      "status": "adapted",
+      "symbols": {}
+    },
+    {
+      "id": "domestic-11.15.0-41512",
+      "channel": "domestic",
+      "displayName": "国内版",
+      "versionName": "11.15.0",
+      "minVersionCode": 41512,
+      "maxVersionCode": 41512,
       "status": "adapted",
       "symbols": {}
     }

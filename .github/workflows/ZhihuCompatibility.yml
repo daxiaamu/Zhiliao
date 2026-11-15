@@ -81,7 +81,7 @@ jobs:
           CHANNEL: ${{ matrix.channel }}
           FORCE_CHECK: ${{ inputs.force || false }}
           DOMESTIC_APK_URL: ${{ inputs.domestic_apk_url || 'https://www.zhihu.com/client/download/1355/zhihuwap64' }}
-          PLAY_APK_URL: ${{ inputs.play_apk_url || secrets.ZHIHU_PLAY_APK_URL || vars.ZHIHU_PLAY_APK_URL || 'https://d.apkpure.net/b/XAPK/com.zhihu.android?version=latest' }}
+          PLAY_APK_URL: ${{ inputs.play_apk_url || secrets.ZHIHU_PLAY_APK_URL || vars.ZHIHU_PLAY_APK_URL }}
         shell: bash
         run: |
           set -euo pipefail
@@ -110,9 +110,19 @@ jobs:
               exit 0
             fi
             echo 'needs_apk=true' >> "$GITHUB_OUTPUT"
+            play_apk_url="$PLAY_APK_URL"
+            if [[ -z "$play_apk_url" ]]; then
+              curl --fail --location --retry 3 --retry-all-errors --compressed \
+                --user-agent 'Mozilla/5.0' \
+                --output compatibility-work/apkpure-version.html \
+                "https://apkpure.net/cn/zhihu/com.zhihu.android/download/$official_version"
+              play_apk_url="$(python scripts/compatibility/catalog.py \
+                parse-apkpure-download-url \
+                --html compatibility-work/apkpure-version.html)"
+            fi
             curl --fail --location --retry 3 --retry-all-errors \
               --user-agent 'APKPure/3.20.49 (Linux; Android 16)' \
-              --output compatibility-work/play-download "$PLAY_APK_URL"
+              --output compatibility-work/play-download "$play_apk_url"
             download_size="$(stat -c%s compatibility-work/play-download)"
             test "$download_size" -gt 5000000
             test "$download_size" -lt 1073741824

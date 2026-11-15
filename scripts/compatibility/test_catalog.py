@@ -6,7 +6,13 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from catalog import CatalogError, add_profile, is_adapted, parse_play_version
+from catalog import (
+    CatalogError,
+    add_profile,
+    is_adapted,
+    parse_apkpure_download_url,
+    parse_play_version,
+)
 
 
 CATALOG = {
@@ -35,6 +41,24 @@ class CatalogTest(unittest.TestCase):
         html = '[[["10.95.0"]],[[[36]] [[["10.96.0"]],[[[36]]'
         with self.assertRaises(CatalogError):
             parse_play_version(html)
+
+    def test_apkpure_download_url_uses_exact_version_code(self):
+        html = (
+            'href="https://d.apkpure.net/b/XAPK/com.zhihu.android?'
+            'versionCode=41312"'
+        )
+        self.assertEqual(
+            "https://d.apkpure.net/b/XAPK/com.zhihu.android?versionCode=41312",
+            parse_apkpure_download_url(html),
+        )
+
+    def test_apkpure_download_url_rejects_ambiguous_versions(self):
+        html = (
+            "https://d.apkpure.net/b/XAPK/com.zhihu.android?versionCode=41312 "
+            "https://d.apkpure.net/b/XAPK/com.zhihu.android?versionCode=41512"
+        )
+        with self.assertRaises(CatalogError):
+            parse_apkpure_download_url(html)
 
     def test_adapted_match_is_channel_specific(self):
         self.assertTrue(is_adapted(CATALOG, "play", "10.95.0", 29522))

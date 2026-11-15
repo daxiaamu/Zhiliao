@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import html as html_module
 import json
 import re
 import sys
@@ -18,6 +19,10 @@ CHANNEL_NAMES = {
 }
 PLAY_VERSION_PATTERN = re.compile(
     r'\[\[\["([^"\\]+)"\]\],\[\[\[36\]\]'
+)
+APKPURE_DOWNLOAD_PATTERN = re.compile(
+    r"https://d\.apkpure\.net/b/(?:XAPK|APK)/com\.zhihu\.android"
+    r"\?versionCode=\d+"
 )
 VERSION_NAME_PATTERN = re.compile(r"\d+(?:\.\d+){1,3}(?:[-+][0-9A-Za-z._-]+)?")
 SYMBOL_PATTERN = re.compile(r"[A-Za-z_$][A-Za-z0-9_.$]*$")
@@ -206,6 +211,18 @@ def parse_play_version(html: str) -> str:
     return versions.pop()
 
 
+def parse_apkpure_download_url(html: str) -> str:
+    urls = set(APKPURE_DOWNLOAD_PATTERN.findall(html_module.unescape(html)))
+    if not urls:
+        raise CatalogError("APKPure version-specific download URL was not found")
+    if len(urls) != 1:
+        raise CatalogError(
+            "APKPure page contains ambiguous download URLs: "
+            + ", ".join(sorted(urls))
+        )
+    return urls.pop()
+
+
 def next_revision(current: int, requested: int | None = None) -> int:
     candidate = requested
     if candidate is None:
@@ -263,6 +280,9 @@ def build_parser() -> argparse.ArgumentParser:
     play = subparsers.add_parser("parse-play-version")
     play.add_argument("--html", type=Path, required=True)
 
+    apkpure = subparsers.add_parser("parse-apkpure-download-url")
+    apkpure.add_argument("--html", type=Path, required=True)
+
     add = subparsers.add_parser("add-profile")
     add.add_argument("--catalog", type=Path, required=True)
     add.add_argument("--channel", choices=CHANNEL_NAMES, required=True)
@@ -281,6 +301,10 @@ def main(argv: list[str] | None = None) -> int:
         if args.command == "parse-play-version":
             html = args.html.read_text(encoding="utf-8")
             print(parse_play_version(html))
+            return 0
+        if args.command == "parse-apkpure-download-url":
+            html = args.html.read_text(encoding="utf-8")
+            print(parse_apkpure_download_url(html))
             return 0
 
         catalog = load_catalog(args.catalog)

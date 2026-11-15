@@ -42,7 +42,7 @@ public class CompatibilityRegistryTest {
     @Test
     public void catalogDrivesAdaptedVersionDialog() throws Exception {
         initialize(40408);
-        assertEquals(9, CompatibilityRegistry.getAdaptedVersions().size());
+        assertEquals(17, CompatibilityRegistry.getAdaptedVersions().size());
         assertEquals("\u56fd\u5185\u7248", CompatibilityRegistry.getAdaptedVersions().get(0).displayName);
         assertEquals("11.4.0", CompatibilityRegistry.getAdaptedVersions().get(0).versionName);
         assertEquals(40408, CompatibilityRegistry.getAdaptedVersions().get(0).minVersionCode);
@@ -69,6 +69,22 @@ public class CompatibilityRegistryTest {
         assertEquals("国内版", CompatibilityRegistry.getAdaptedVersions().get(8).displayName);
         assertEquals("11.6.1", CompatibilityRegistry.getAdaptedVersions().get(8).versionName);
         assertEquals(40612, CompatibilityRegistry.getAdaptedVersions().get(8).minVersionCode);
+        assertEquals("11.9.0", CompatibilityRegistry.getAdaptedVersions().get(9).versionName);
+        assertEquals(40910, CompatibilityRegistry.getAdaptedVersions().get(9).minVersionCode);
+        assertEquals("11.10.0", CompatibilityRegistry.getAdaptedVersions().get(10).versionName);
+        assertEquals(41012, CompatibilityRegistry.getAdaptedVersions().get(10).minVersionCode);
+        assertEquals("11.11.0", CompatibilityRegistry.getAdaptedVersions().get(11).versionName);
+        assertEquals(41106, CompatibilityRegistry.getAdaptedVersions().get(11).minVersionCode);
+        assertEquals("11.11.1", CompatibilityRegistry.getAdaptedVersions().get(12).versionName);
+        assertEquals(41108, CompatibilityRegistry.getAdaptedVersions().get(12).minVersionCode);
+        assertEquals("11.12.0", CompatibilityRegistry.getAdaptedVersions().get(13).versionName);
+        assertEquals(41208, CompatibilityRegistry.getAdaptedVersions().get(13).minVersionCode);
+        assertEquals("11.13.0", CompatibilityRegistry.getAdaptedVersions().get(14).versionName);
+        assertEquals(41312, CompatibilityRegistry.getAdaptedVersions().get(14).minVersionCode);
+        assertEquals("11.14.0", CompatibilityRegistry.getAdaptedVersions().get(15).versionName);
+        assertEquals(41410, CompatibilityRegistry.getAdaptedVersions().get(15).minVersionCode);
+        assertEquals("11.15.0", CompatibilityRegistry.getAdaptedVersions().get(16).versionName);
+        assertEquals(41512, CompatibilityRegistry.getAdaptedVersions().get(16).minVersionCode);
     }
 
     @Test
